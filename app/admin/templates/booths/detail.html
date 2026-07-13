@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+부스 신청 상세
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <a href="/admin/booths">← 목록으로</a>
+        <h1>{{ application.company_name }}</h1>
+        <p>{{ application.contact_name }}</p>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <section class="detail-card">
+        <h2>신청 정보</h2>
+
+        <dl class="detail-list">
+            <dt>회사/프로젝트</dt>
+            <dd>{{ application.company_name }}</dd>
+
+            <dt>담당자 성함</dt>
+            <dd>{{ application.contact_name }}</dd>
+
+            <dt>이메일</dt>
+            <dd>{{ application.email }}</dd>
+
+            <dt>이메일 인증</dt>
+            <dd>
+                {% if application.email_verified %}
+                인증 완료
+                {% else %}
+                미인증
+                {% endif %}
+            </dd>
+
+            <dt>연락처</dt>
+            <dd>{{ application.phone }}</dd>
+
+            <dt>부스 운영 계획 및 전달 사항</dt>
+            <dd class="multiline">
+                {{ application.operation_plan }}
+            </dd>
+
+            <dt>개인정보 동의</dt>
+            <dd>
+                {% if application.privacy_agreed %}
+                동의
+                {% else %}
+                미동의
+                {% endif %}
+            </dd>
+
+            <dt>신청일</dt>
+            <dd>
+                {{ application.created_at.strftime("%Y-%m-%d %H:%M") }}
+            </dd>
+        </dl>
+    </section>
+
+    <section class="detail-card">
+        <h2>신청 상태</h2>
+
+        <form
+                method="post"
+                action="/admin/booths/{{ application.id }}/status"
+                class="admin-form"
+        >
+            <select name="status">
+                <option
+                        value="0"
+                        {% if application.status == 0 %}selected{% endif %}
+                >
+                    대기
+                </option>
+
+                <option
+                        value="1"
+                        {% if application.status == 1 %}selected{% endif %}
+                >
+                    승인
+                </option>
+
+                <option
+                        value="2"
+                        {% if application.status == 2 %}selected{% endif %}
+                >
+                    반려
+                </option>
+            </select>
+
+            <button type="submit">
+                상태 저장
+            </button>
+        </form>
+    </section>
+</div>
+{% endblock %}

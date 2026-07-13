@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}
+연사 신청 관리
+{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <h1>연사 신청 관리</h1>
+        <p>총 {{ total_count }}건의 신청이 있습니다.</p>
+    </div>
+</section>
+
+<form
+        method="get"
+        action="/admin/speakers"
+        class="filter-form"
+>
+    <input
+            type="text"
+            name="keyword"
+            value="{{ keyword }}"
+            placeholder="이름, 회사, 이메일 검색"
+    >
+
+    <select name="status">
+        <option value="">전체 상태</option>
+
+        <option
+                value="0"
+                {% if selected_status == 0 %}selected{% endif %}
+        >
+            대기
+        </option>
+
+        <option
+                value="1"
+                {% if selected_status == 1 %}selected{% endif %}
+        >
+            승인
+        </option>
+
+        <option
+                value="2"
+                {% if selected_status == 2 %}selected{% endif %}
+        >
+            반려
+        </option>
+    </select>
+
+    <button type="submit">검색</button>
+</form>
+
+<div class="table-wrapper">
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>이름</th>
+            <th>회사/프로젝트</th>
+            <th>이메일</th>
+            <th>이메일 인증</th>
+            <th>상태</th>
+            <th>공개</th>
+            <th>신청일</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for application in applications %}
+        <tr>
+            <td>{{ application.id }}</td>
+
+            <td>
+                <a href="/admin/speakers/{{ application.id }}">
+                    {{ application.name }}
+                </a>
+            </td>
+
+            <td>{{ application.company_name }}</td>
+            <td>{{ application.email }}</td>
+
+            <td>
+                {% if application.email_verified %}
+                인증
+                {% else %}
+                미인증
+                {% endif %}
+            </td>
+
+            <td>
+                {% if application.status == 0 %}
+                대기
+                {% elif application.status == 1 %}
+                승인
+                {% elif application.status == 2 %}
+                반려
+                {% endif %}
+            </td>
+
+            <td>
+                {% if application.is_public %}
+                공개
+                {% else %}
+                비공개
+                {% endif %}
+            </td>
+
+            <td>
+                {{ application.created_at.strftime("%Y-%m-%d %H:%M") }}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="8" class="empty-cell">
+                조건에 맞는 연사 신청이 없습니다.
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<nav class="pagination">
+    {% for page_number in range(1, total_pages + 1) %}
+    <a
+            href="/admin/speakers?page={{ page_number }}{% if selected_status is not none %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}"
+            class="{% if page_number == current_page %}active{% endif %}"
+    >
+        {{ page_number }}
+    </a>
+    {% endfor %}
+</nav>
+{% endblock %}

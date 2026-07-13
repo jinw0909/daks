@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>DAKS 이메일 인증</title>
+</head>
+<body>
+<h2>{{ applicant_name }}님, {{ application_name }}이 접수되었습니다.</h2>
+
+<p>아래 버튼을 눌러 이메일 인증을 완료해 주세요.</p>
+
+<p>
+    <a href="{{ verification_url }}">
+        이메일 인증하기
+    </a>
+</p>
+
+<p>인증 링크는 24시간 동안 유효합니다.</p>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+관리자 대시보드
+{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="dashboard-heading">
+        <h1>관리자 대시보드</h1>
+
+        <p>
+            연사 신청, 부스 신청, 티켓과 결제를 관리합니다.
+        </p>
+    </div>
+
+    <div class="dashboard-grid">
+        <a href="/admin/speakers" class="dashboard-card">
+            <strong>연사 신청</strong>
+            <span>신청 목록과 공개 연사를 관리합니다.</span>
+        </a>
+
+        <a href="/admin/booths" class="dashboard-card">
+            <strong>부스 신청</strong>
+            <span>부스 신청 내역을 관리합니다.</span>
+        </a>
+
+        <a href="/admin/tickets" class="dashboard-card">
+            <strong>티켓 신청</strong>
+            <span>티켓 구매자 정보를 확인합니다.</span>
+        </a>
+
+        <a href="/admin/payments" class="dashboard-card">
+            <strong>결제 내역</strong>
+            <span>LinkPay 결제 결과를 확인합니다.</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

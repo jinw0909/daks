@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+관리자 로그인
+{% endblock %}
+
+{% block content %}
+<section class="login-page">
+    <div class="login-card">
+        <h1>관리자 로그인</h1>
+
+        <p class="login-description">
+            DAKS 관리자 계정으로 로그인하세요.
+        </p>
+
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form
+                method="post"
+                action="/admin/login"
+                class="login-form"
+        >
+            <label>
+                <span>아이디</span>
+
+                <input
+                        type="text"
+                        name="username"
+                        value="{{ username | default('') }}"
+                        autocomplete="username"
+                        required
+                >
+            </label>
+
+            <label>
+                <span>비밀번호</span>
+
+                <input
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                >
+            </label>
+
+            <button type="submit">
+                로그인
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}
