@@ -12,6 +12,11 @@ class PublicSpeakerListItem(BaseModel):
     company_name: str
     public_title: str | None
     profile_image_url: str | None
+
+    x_url: str | None
+    youtube_url: str | None
+    facebook_url: str | None
+
     display_order: int
 
 
@@ -26,4 +31,5 @@ class PublicSpeakerDetail(BaseModel):
     profile_image_url: str | None
     x_url: str | None
     youtube_url: str | None
+    facebook_url: str | None
     display_order: int

@@ -92,6 +92,11 @@ class SpeakerApplication(Base, TimestampMixin):
         nullable=True,
     )
 
+    facebook_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
     is_public: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,

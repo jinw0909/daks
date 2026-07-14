@@ -42,6 +42,10 @@ def find_speaker_application_by_id(
 
     return db.scalar(stmt)
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.db.models.speaker_application import SpeakerApplication
 
 
 def find_speaker_applications(
@@ -49,6 +53,7 @@ def find_speaker_applications(
         *,
         status: int | None = None,
         keyword: str | None = None,
+        is_public: bool | None = None,
         offset: int = 0,
         limit: int = 20,
 ) -> list[SpeakerApplication]:
@@ -59,25 +64,38 @@ def find_speaker_applications(
             SpeakerApplication.status == status,
             )
 
-    if keyword:
-        search_keyword = f"%{keyword}%"
-
+    if is_public is not None:
         stmt = stmt.where(
-            (
-                    SpeakerApplication.name.like(search_keyword)
-                    | SpeakerApplication.company_name.like(search_keyword)
-                    | SpeakerApplication.email.like(search_keyword)
-            )
+            SpeakerApplication.is_public.is_(is_public),
         )
+
+    if keyword:
+        keyword = keyword.strip()
+
+        if keyword:
+            pattern = f"%{keyword}%"
+
+            stmt = stmt.where(
+                SpeakerApplication.name.like(pattern)
+                | SpeakerApplication.company_name.like(pattern)
+                | SpeakerApplication.email.like(pattern)
+                | SpeakerApplication.phone.like(pattern)
+                | SpeakerApplication.english_name.like(pattern)
+                | SpeakerApplication.public_title.like(pattern)
+            )
 
     stmt = (
         stmt
-        .order_by(SpeakerApplication.id.desc())
+        .order_by(
+            SpeakerApplication.created_at.desc(),
+        )
         .offset(offset)
         .limit(limit)
     )
 
     return list(db.scalars(stmt).all())
+
+from sqlalchemy import func, select
 
 
 def count_speaker_applications(
@@ -85,24 +103,36 @@ def count_speaker_applications(
         *,
         status: int | None = None,
         keyword: str | None = None,
+        is_public: bool | None = None,
 ) -> int:
-    stmt = select(func.count(SpeakerApplication.id))
+    stmt = select(
+        func.count(SpeakerApplication.id),
+    )
 
     if status is not None:
         stmt = stmt.where(
             SpeakerApplication.status == status,
             )
 
-    if keyword:
-        search_keyword = f"%{keyword}%"
-
+    if is_public is not None:
         stmt = stmt.where(
-            (
-                    SpeakerApplication.name.like(search_keyword)
-                    | SpeakerApplication.company_name.like(search_keyword)
-                    | SpeakerApplication.email.like(search_keyword)
-            )
+            SpeakerApplication.is_public.is_(is_public),
         )
+
+    if keyword:
+        keyword = keyword.strip()
+
+        if keyword:
+            pattern = f"%{keyword}%"
+
+            stmt = stmt.where(
+                SpeakerApplication.name.like(pattern)
+                | SpeakerApplication.company_name.like(pattern)
+                | SpeakerApplication.email.like(pattern)
+                | SpeakerApplication.phone.like(pattern)
+                | SpeakerApplication.english_name.like(pattern)
+                | SpeakerApplication.public_title.like(pattern)
+            )
 
     return db.scalar(stmt) or 0
 

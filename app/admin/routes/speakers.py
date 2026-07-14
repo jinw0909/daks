@@ -48,7 +48,6 @@ def resolve_admin_or_redirect(
 
     return admin, None
 
-
 @router.get(
     "",
     response_class=HTMLResponse,
@@ -58,6 +57,7 @@ def speaker_list_page(
         page: int = Query(default=1, ge=1),
         status: int | None = Query(default=None),
         keyword: str | None = Query(default=None),
+        is_public: bool | None = Query(default=None),
         admin_access_token: str | None = Cookie(default=None),
         db: Session = Depends(get_db),
 ):
@@ -76,6 +76,7 @@ def speaker_list_page(
         db,
         status=status,
         keyword=keyword,
+        is_public=is_public,
         offset=offset,
         limit=page_size,
     )
@@ -84,6 +85,7 @@ def speaker_list_page(
         db,
         status=status,
         keyword=keyword,
+        is_public=is_public,
     )
 
     total_pages = max(
@@ -101,6 +103,7 @@ def speaker_list_page(
             "total_pages": total_pages,
             "total_count": total_count,
             "selected_status": status,
+            "selected_is_public": is_public,
             "keyword": keyword or "",
         },
     )
@@ -199,52 +202,6 @@ def change_speaker_status(
         status_code=303,
     )
 
-#
-# @router.post("/{application_id}/public-profile")
-# def change_speaker_public_profile(
-#         application_id: int,
-#         english_name: str | None = Form(default=None),
-#         public_title: str | None = Form(default=None),
-#         # profile_image_url: str | None = Form(default=None),
-#         x_url: str | None = Form(default=None),
-#         youtube_url: str | None = Form(default=None),
-#         display_order: int = Form(default=0),
-#         is_public: bool = Form(default=False),
-#         admin_access_token: str | None = Cookie(default=None),
-#         db: Session = Depends(get_db),
-# ):
-#     admin, redirect = resolve_admin_or_redirect(
-#         db,
-#         admin_access_token,
-#     )
-#
-#     if redirect:
-#         return redirect
-#
-#     update_speaker_public_profile(
-#         db,
-#         application_id=application_id,
-#         english_name=english_name.strip() if english_name else None,
-#         public_title=public_title.strip() if public_title else None,
-#         # profile_image_url=(
-#         #     profile_image_url.strip()
-#         #     if profile_image_url
-#         #     else None
-#         # ),
-#         x_url=x_url.strip() if x_url else None,
-#         youtube_url=(
-#             youtube_url.strip()
-#             if youtube_url
-#             else None
-#         ),
-#         display_order=display_order,
-#         is_public=is_public,
-#     )
-#
-#     return RedirectResponse(
-#         url=f"/admin/speakers/{application_id}",
-#         status_code=303,
-#     )
 @router.post(
     "/{application_id}/public-profile",
     response_class=HTMLResponse,
@@ -256,6 +213,7 @@ def change_speaker_public_profile(
         public_title: str | None = Form(default=None),
         x_url: str | None = Form(default=None),
         youtube_url: str | None = Form(default=None),
+        facebook_url: str | None = Form(default=None),
         display_order: int = Form(default=0),
         is_public: bool = Form(default=False),
         admin_access_token: str | None = Cookie(default=None),
@@ -289,6 +247,7 @@ def change_speaker_public_profile(
                 if youtube_url
                 else None
             ),
+            facebook_url=facebook_url.strip() if facebook_url else None,
             display_order=display_order,
             is_public=is_public,
         )

@@ -141,9 +141,9 @@ def update_speaker_public_profile(
         application_id: int,
         english_name: str | None,
         public_title: str | None,
-        # profile_image_url: str | None,
         x_url: str | None,
         youtube_url: str | None,
+        facebook_url: str | None,
         display_order: int,
         is_public: bool,
 ) -> SpeakerApplication:
@@ -165,9 +165,9 @@ def update_speaker_public_profile(
     try:
         application.english_name = english_name
         application.public_title = public_title
-        # application.profile_image_url = profile_image_url
         application.x_url = x_url
         application.youtube_url = youtube_url
+        application.facebook_url = facebook_url
         application.display_order = display_order
         application.is_public = is_public
 

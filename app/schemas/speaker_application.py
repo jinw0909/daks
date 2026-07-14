@@ -58,15 +58,61 @@ class SpeakerApplicationCreateRequest(BaseModel):
         return value
 
 
+# class SpeakerApplicationAdminUpdateRequest(BaseModel):
+#     status: int | None = None
+#     english_name: str | None = Field(default=None, max_length=100)
+#     public_title: str | None = Field(default=None, max_length=255)
+#     profile_image_url: str | None = Field(default=None, max_length=500)
+#     x_url: str | None = Field(default=None, max_length=500)
+#     youtube_url: str | None = Field(default=None, max_length=500)
+#     is_public: bool | None = None
+#     display_order: int | None = None
+
 class SpeakerApplicationAdminUpdateRequest(BaseModel):
     status: int | None = None
-    english_name: str | None = Field(default=None, max_length=100)
-    public_title: str | None = Field(default=None, max_length=255)
-    profile_image_url: str | None = Field(default=None, max_length=500)
-    x_url: str | None = Field(default=None, max_length=500)
-    youtube_url: str | None = Field(default=None, max_length=500)
+    english_name: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+    public_title: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+    profile_image_url: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+    x_url: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+    youtube_url: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+    facebook_url: str | None = Field(
+        default=None,
+        max_length=500,
+    )
     is_public: bool | None = None
     display_order: int | None = None
+
+    @field_validator(
+        "english_name",
+        "public_title",
+        "profile_image_url",
+        "x_url",
+        "youtube_url",
+        "facebook_url",
+        mode="before",
+    )
+    @classmethod
+    def empty_string_to_none(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            return value if value else None
+
+        return value
 
 class SpeakerApplicationCreateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -80,6 +126,19 @@ class SpeakerApplicationCreateResponse(BaseModel):
     created_at: datetime
 
 
+# class PublicSpeakerResponse(BaseModel):
+#     model_config = ConfigDict(from_attributes=True)
+#
+#     id: int
+#     name: str
+#     english_name: str | None
+#     company_name: str
+#     public_title: str | None
+#     profile_image_url: str | None
+#     x_url: str | None
+#     youtube_url: str | None
+#     display_order: int
+
 class PublicSpeakerResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -91,6 +150,7 @@ class PublicSpeakerResponse(BaseModel):
     profile_image_url: str | None
     x_url: str | None
     youtube_url: str | None
+    facebook_url: str | None
     display_order: int
 
 

@@ -195,6 +195,7 @@
                         type="url"
                         name="x_url"
                         value="{{ application.x_url or '' }}"
+                        placeholder="https://x.com/..."
                 >
             </label>
 
@@ -204,9 +205,19 @@
                         type="url"
                         name="youtube_url"
                         value="{{ application.youtube_url or '' }}"
+                        placeholder="https://youtube.com/..."
                 >
             </label>
 
+            <label>
+                <span>Facebook 링크</span>
+                <input
+                        type="url"
+                        id="facebook_url"
+                        name="facebook_url"
+                        value="{{ application.facebook_url or '' }}"
+                        placeholder="https://facebook.com/..."
+                />
             <label>
                 <span>정렬 순서</span>
                 <input

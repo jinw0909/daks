@@ -8,6 +8,7 @@ from app.api.admin import router as admin_api_router
 from app.api.public import router as public_router
 from app.core.config import settings
 from app.db.session import check_database_connection
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -21,6 +22,20 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:5500",
+        "https://digitalassetkoreasummit.com",
+        "https://www.digitalassetkoreasummit.com",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.mount(
     "/admin/static",

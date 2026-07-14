@@ -49,6 +49,24 @@
         </option>
     </select>
 
+    <select name="is_public">
+        <option value="">전체 공개 상태</option>
+
+        <option
+                value="true"
+                {% if selected_is_public is sameas true %}selected{% endif %}
+        >
+            공개 연사만
+        </option>
+
+        <option
+                value="false"
+                {% if selected_is_public is sameas false %}selected{% endif %}
+        >
+            비공개 연사만
+        </option>
+    </select>
+
     <button type="submit">검색</button>
 </form>
 
@@ -125,7 +143,7 @@
 <nav class="pagination">
     {% for page_number in range(1, total_pages + 1) %}
     <a
-            href="/admin/speakers?page={{ page_number }}{% if selected_status is not none %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}"
+            href="/admin/speakers?page={{ page_number }}{% if selected_status is not none %}&status={{ selected_status }}{% endif %}{% if selected_is_public is not none %}&is_public={{ 'true' if selected_is_public else 'false' }}{% endif %}{% if keyword %}&keyword={{ keyword | urlencode }}{% endif %}"
             class="{% if page_number == current_page %}active{% endif %}"
     >
         {{ page_number }}
