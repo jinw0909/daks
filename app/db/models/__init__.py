@@ -7,6 +7,9 @@ from app.db.models.booth_application import BoothApplication
 from app.db.models.payment import Payment
 from app.db.models.speaker_application import SpeakerApplication
 from app.db.models.ticket_user import TicketUser
+from app.db.models.webhook_log import WebhookLog
+from app.db.models.webhook_log_history import WebhookLogHistory
+from app.db.models.payment_status_history import PaymentStatusHistory
 
 __all__ = [
     "Admin",
@@ -16,4 +19,7 @@ __all__ = [
     "BoothApplication",
     "TicketUser",
     "Payment",
+    "WebhookLog",
+    "WebhookLogHistory",
+    "PaymentStatusHistory",
 ]
