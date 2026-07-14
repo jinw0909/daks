@@ -13,6 +13,7 @@ class Payment(Base, TimestampMixin):
     STATUS_READY = 1
     STATUS_PAID = 2
     STATUS_FAILED = 3
+    STATUS_CANCELED=4
 
     id: Mapped[int] = mapped_column(
         primary_key=True,

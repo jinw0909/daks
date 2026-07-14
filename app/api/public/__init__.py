@@ -12,15 +12,25 @@ from app.api.public.speaker_applications import (
 from app.api.public.speakers import (
     router as speakers_router,
 )
+from app.api.public.webhooks import (
+    router as webhook_router,
+)
 from app.api.public.tickets import router as tickets_router
 
-
-router = APIRouter(
+public_router = APIRouter(
     prefix="/api/public",
 )
 
-router.include_router(speaker_application_router)
-router.include_router(booth_application_router)
-router.include_router(application_email_verification_router)
-router.include_router(speakers_router)
-router.include_router(tickets_router)
+
+public_router.include_router(speaker_application_router)
+public_router.include_router(booth_application_router)
+public_router.include_router(application_email_verification_router)
+public_router.include_router(speakers_router)
+public_router.include_router(tickets_router)
+
+# prefix 없는 별도 router
+router = APIRouter()
+
+router.include_router(public_router)
+router.include_router(webhook_router)
+

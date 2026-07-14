@@ -2,13 +2,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin import router as admin_page_router
 from app.api.admin import router as admin_api_router
 from app.api.public import router as public_router
 from app.core.config import settings
 from app.db.session import check_database_connection
-from fastapi.middleware.cors import CORSMiddleware
+from app.api.public import router as webhook_router
 
 
 @asynccontextmanager
@@ -42,10 +43,11 @@ app.mount(
     StaticFiles(directory="app/admin/static"),
     name="admin-static",
 )
-
-app.include_router(public_router)
+# app.include_router(webhook_router)
+# app.include_router(public_router)
 app.include_router(admin_api_router)
 app.include_router(admin_page_router)
+app.include_router(public_router)
 
 
 @app.get("/health")

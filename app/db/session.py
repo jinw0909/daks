@@ -4,6 +4,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
+from sqlalchemy import create_engine, func, cast
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 engine = create_engine(
@@ -22,3 +24,4 @@ SessionLocal = sessionmaker(
 def check_database_connection() -> None:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
+        
