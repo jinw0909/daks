@@ -5,11 +5,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.repositories.payment_repository import create_ready_payment
-from app.repositories.ticket_user_repository import create_ticket_user
+from app.db.models import Payment
+from app.repositories.payment_repository import create_ready_payment, find_payments_by_ticket_user_ids
+from app.repositories.ticket_user_repository import create_ticket_user, find_ticket_users_by_name_and_phone
 from app.schemas.ticket import (
     TicketPaymentPrepareRequest,
-    TicketPaymentPrepareResponse,
+    TicketPaymentPrepareResponse, TicketPaymentHistoryResponse, TicketPaymentHistoryItem, TicketPaymentHistoryRequest,
 )
 
 
@@ -99,3 +100,109 @@ def prepare_ticket_payment(
     except Exception:
         db.rollback()
         raise
+
+def get_payment_status_name(status: int) -> str:
+    status_names = {
+        Payment.STATUS_READY: "결제 대기",
+        Payment.STATUS_PAID: "결제 완료",
+        Payment.STATUS_FAILED: "결제 실패",
+        Payment.STATUS_CANCELED: "결제 취소",
+    }
+
+    return status_names.get(
+        status,
+        "상태 확인 필요",
+    )
+
+
+def mask_phone(phone: str) -> str:
+    normalized = "".join(
+        character
+        for character in phone
+        if character.isdigit()
+    )
+
+    if len(normalized) == 11:
+        return (
+            f"{normalized[:3]}-"
+            f"****-"
+            f"{normalized[-4:]}"
+        )
+
+    if len(normalized) == 10:
+        return (
+            f"{normalized[:3]}-"
+            f"***-"
+            f"{normalized[-4:]}"
+        )
+
+    return "****"
+
+
+def get_ticket_payment_history(
+        db: Session,
+        request: TicketPaymentHistoryRequest,
+) -> TicketPaymentHistoryResponse:
+    ticket_users = find_ticket_users_by_name_and_phone(
+        db,
+        name=request.name,
+        phone=request.phone,
+    )
+
+    if not ticket_users:
+        raise HTTPException(
+            status_code=404,
+            detail="입력한 정보와 일치하는 구매 내역을 찾을 수 없습니다.",
+        )
+
+    ticket_user_ids = [
+        ticket_user.id
+        for ticket_user in ticket_users
+    ]
+
+    payments = find_payments_by_ticket_user_ids(
+        db,
+        ticket_user_ids=ticket_user_ids,
+    )
+
+    # 구매 내역 조회 화면에는 READY를 굳이 보여주지 않는 편이 자연스럽다.
+    visible_payments = [
+        payment
+        for payment in payments
+        if payment.status != Payment.STATUS_READY
+    ]
+
+    if not visible_payments:
+        raise HTTPException(
+            status_code=404,
+            detail="입력한 정보와 일치하는 구매 내역을 찾을 수 없습니다.",
+        )
+
+    payment_items = [
+        TicketPaymentHistoryItem(
+            payment_id=payment.id,
+            order_id=payment.order_id,
+            payment_name=payment.payment_name,
+            amount=(
+                payment.paid_amount
+                if payment.paid_amount is not None
+                else payment.expected_amount
+            ),
+            status=payment.status,
+            status_name=get_payment_status_name(
+                payment.status,
+            ),
+            paid_at=payment.paid_at,
+        )
+        for payment in visible_payments
+    ]
+
+    representative_user = ticket_users[0]
+
+    return TicketPaymentHistoryResponse(
+        name=representative_user.name,
+        phone=mask_phone(
+            representative_user.phone,
+        ),
+        payments=payment_items,
+    )

@@ -28,3 +28,24 @@ def create_ready_payment(
     db.flush()
 
     return payment
+
+
+def find_payments_by_ticket_user_ids(
+        db: Session,
+        *,
+        ticket_user_ids: list[int],
+) -> list[Payment]:
+    if not ticket_user_ids:
+        return []
+
+    return (
+        db.query(Payment)
+        .filter(
+            Payment.ticket_user_id.in_(ticket_user_ids),
+        )
+        .order_by(
+            Payment.created_at.desc(),
+            Payment.id.desc(),
+        )
+        .all()
+    )

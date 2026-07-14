@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import func
 
 from app.db.models.ticket_user import TicketUser
 
@@ -31,3 +32,29 @@ def create_ticket_user(
     db.flush()
 
     return ticket_user
+
+def find_ticket_users_by_name_and_phone(
+        db: Session,
+        *,
+        name: str,
+        phone: str,
+) -> list[TicketUser]:
+    normalized_phone_column = func.replace(
+        func.replace(
+            TicketUser.phone,
+            "-",
+            "",
+        ),
+        " ",
+        "",
+    )
+
+    return (
+        db.query(TicketUser)
+        .filter(
+            TicketUser.name == name,
+            normalized_phone_column == phone,
+            )
+        .order_by(TicketUser.id.desc())
+        .all()
+    )

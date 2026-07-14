@@ -60,6 +60,12 @@ class Payment(Base, TimestampMixin):
         index=True,
     )
 
+    order_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
+    )
+
     raw_payload: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
