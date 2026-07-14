@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.models import (
-    Payment,
+    Payment, PaymentStatusHistory,
 )
 
 
