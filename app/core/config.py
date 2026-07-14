@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     s3_public_base_url: str
     s3_speaker_image_prefix: str = "speakers"
 
+    toss_ticket_product_link: str
+    toss_ticket_product_key: str
+    ticket_payment_name: str = "2026 Digital Asset Korea Summit Ticket"
+    ticket_expected_amount: int = 19000
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
