@@ -5,11 +5,11 @@ from app.schemas.ticket import (
     TicketPaymentHistoryRequest,
     TicketPaymentHistoryResponse,
     TicketPaymentPrepareRequest,
-    TicketPaymentPrepareResponse,
+    TicketPaymentPrepareResponse, TicketPaymentStatusResponse,
 )
 from app.services.ticket_service import (
     get_ticket_payment_history,
-    prepare_ticket_payment,
+    prepare_ticket_payment, get_ticket_payment_status,
 )
 
 
@@ -47,4 +47,22 @@ def get_payment_history(
     return get_ticket_payment_history(
         db=db,
         request=request,
+    )
+
+
+@router.get(
+    "/{payment_id}/status",
+    response_model=TicketPaymentStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="티켓 결제 상태 조회",
+)
+def get_payment_status(
+        payment_id: int,
+        ticket_user_id: int,
+        db: DbSession,
+) -> TicketPaymentStatusResponse:
+    return get_ticket_payment_status(
+        db=db,
+        payment_id=payment_id,
+        ticket_user_id=ticket_user_id,
     )

@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.db.models.payment import Payment
 
@@ -48,4 +48,23 @@ def find_payments_by_ticket_user_ids(
             Payment.id.desc(),
         )
         .all()
+    )
+
+
+def find_payment_by_id_and_ticket_user_id(
+        db: Session,
+        *,
+        payment_id: int,
+        ticket_user_id: int,
+) -> Payment | None:
+    return (
+        db.query(Payment)
+        .options(
+            joinedload(Payment.ticket_user),
+        )
+        .filter(
+            Payment.id == payment_id,
+            Payment.ticket_user_id == ticket_user_id,
+            )
+        .first()
     )

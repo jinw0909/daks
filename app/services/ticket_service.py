@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.models import Payment
-from app.repositories.payment_repository import create_ready_payment, find_payments_by_ticket_user_ids
+from app.repositories.payment_repository import create_ready_payment, find_payments_by_ticket_user_ids, \
+    find_payment_by_id_and_ticket_user_id
 from app.repositories.ticket_user_repository import create_ticket_user, find_ticket_users_by_name_and_phone
 from app.schemas.ticket import (
     TicketPaymentPrepareRequest,
     TicketPaymentPrepareResponse, TicketPaymentHistoryResponse, TicketPaymentHistoryItem, TicketPaymentHistoryRequest,
+    TicketPaymentStatusResponse,
 )
 
 
@@ -205,4 +207,73 @@ def get_ticket_payment_history(
             representative_user.phone,
         ),
         payments=payment_items,
+    )
+
+
+def get_payment_status_code(payment_status: int) -> str:
+    status_codes = {
+        Payment.STATUS_READY: "READY",
+        Payment.STATUS_PAID: "PAID",
+        Payment.STATUS_FAILED: "FAILED",
+        Payment.STATUS_CANCELED: "CANCELED",
+    }
+
+    return status_codes.get(
+        payment_status,
+        "UNKNOWN",
+    )
+
+
+def get_ticket_payment_status(
+        db: Session,
+        *,
+        payment_id: int,
+        ticket_user_id: int,
+) -> TicketPaymentStatusResponse:
+    payment = find_payment_by_id_and_ticket_user_id(
+        db,
+        payment_id=payment_id,
+        ticket_user_id=ticket_user_id,
+    )
+
+    if not payment:
+        raise HTTPException(
+            status_code=404,
+            detail="결제 정보를 찾을 수 없습니다.",
+        )
+
+    is_completed = payment.status in {
+        Payment.STATUS_PAID,
+        Payment.STATUS_FAILED,
+        Payment.STATUS_CANCELED,
+    }
+
+    is_success = (
+            payment.status == Payment.STATUS_PAID
+    )
+
+    amount = (
+        payment.paid_amount
+        if payment.paid_amount is not None
+        else payment.expected_amount
+    )
+
+    return TicketPaymentStatusResponse(
+        payment_id=payment.id,
+        ticket_user_id=payment.ticket_user_id,
+        status=payment.status,
+        status_code=get_payment_status_code(
+            payment.status,
+        ),
+        status_name=get_payment_status_name(
+            payment.status,
+        ),
+        is_completed=is_completed,
+        is_success=is_success,
+        name=payment.ticket_user.name,
+        order_id=payment.order_id,
+        payment_name=payment.payment_name,
+        amount=amount,
+        quantity=1,
+        paid_at=payment.paid_at,
     )

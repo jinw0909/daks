@@ -104,3 +104,23 @@ class TicketPaymentHistoryResponse(BaseModel):
     name: str
     phone: str
     payments: list[TicketPaymentHistoryItem]
+
+
+
+class TicketPaymentStatusResponse(BaseModel):
+    payment_id: int
+    ticket_user_id: int
+
+    status: int
+    status_code: str
+    status_name: str
+
+    is_completed: bool
+    is_success: bool
+
+    name: str
+    order_id: str | None
+    payment_name: str
+    amount: int
+    quantity: int = 1
+    paid_at: datetime | None
