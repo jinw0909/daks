@@ -47,61 +47,25 @@ async def toss_webhook(
         # =====================================
         # 1. Payload parsing
         # =====================================
-        # event_type = payload.get("eventType")
-        # data = payload.get("data", {}) or {}
-        # payment = data.get("payment", {}) or {}
-        # order_id = payment.get("orderId")
-        # payment_key = payment.get("paymentKey")
-        # status = payment.get("status")
-        # method = payment.get("method")
-        # amount = (data.get("amount")or payment.get("totalAmount"))
-        # approved_at = payment.get("approvedAt")
-        # created_at = data.get("createdAt")
-        # receipt_url = (payment.get("receipt", {}) or {}).get("url")
-        # meta_fields = (data.get("metaFields", {}) or {})
-
-
-        # event_type = payload.get("eventType")
-
-        # data = payload.get("data", {}) or {}
-
-        # # Toss webhook 두 가지 타입 대응
-        # if data.get("payment"):
-        #     # ORDER_PAYMENT_STATUS_CHANGED
-        #     payment = data.get("payment", {}) or {}
-        # else:
-        #     # PAYMENT_STATUS_CHANGED
-        #     payment = data
-
-
-        # order_id = payment.get("orderId")
-        # payment_key = payment.get("paymentKey")
-        # status = payment.get("status")
-        # method = payment.get("method")
-
-        # amount = (
-        #     data.get("amount")
-        #     or payment.get("totalAmount")
-        # )
-
-        # approved_at = payment.get("approvedAt")
-
-        # created_at = (
-        #     data.get("createdAt")
-        #     or payload.get("createdAt")
-        # )
-
-        # receipt_url = (
-        #     payment.get("receipt", {}) or {}
-        # ).get("url")
-
-
-        # # metaFields 두 타입 대응
-        # meta_fields = (
-        #     data.get("metaFields")
-        #     or data.get("metadata")
-        #     or {}
-        # )
+        event_type = payload.get("eventType")
+        data = payload.get("data", {}) or {}
+        payment = data.get("payment", {}) or {}
+        order_id = payment.get("orderId")
+        
+        if event_type == "PAYMENT_STATUS_CHANGED":
+            
+            payment_key = data.get("paymentKey")
+            
+        else:
+            payment_key = payment.get("paymentKey")
+            
+        status = payment.get("status")
+        method = payment.get("method")
+        amount = (data.get("amount")or payment.get("totalAmount"))
+        approved_at = payment.get("approvedAt")
+        created_at = data.get("createdAt")
+        receipt_url = (payment.get("receipt", {}) or {}).get("url")
+        meta_fields = (data.get("metaFields", {}) or {})
 
         payment_id = to_int_or_none(
             meta_fields.get("paymentId")

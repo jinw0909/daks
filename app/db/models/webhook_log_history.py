@@ -14,6 +14,11 @@ class WebhookLogHistory(Base):
         primary_key=True,
         autoincrement=True,
     )
+    
+    eventType: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
 
     order_id: Mapped[str | None] = mapped_column(
         String(100),
