@@ -10,6 +10,7 @@ from app.api.public import router as public_router
 from app.core.config import settings
 from app.db.session import check_database_connection
 from app.api.public import router as webhook_router
+from app.api.public import websocket
 
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ app.add_middleware(
         "http://127.0.0.1:5500",
         "https://digitalassetkoreasummit.com",
         "https://www.digitalassetkoreasummit.com",
+        "http://43.203.147.66:8081"
     ],
     allow_credentials=False,
     allow_methods=["*"],
@@ -49,10 +51,20 @@ app.include_router(admin_api_router)
 app.include_router(admin_page_router)
 app.include_router(public_router)
 
+@app.on_event("startup")
+async def check_routes():
 
+    for route in app.routes:
+        print(
+            route.path,
+            type(route).__name__
+        )
+        
 @app.get("/health")
 def health_check():
     return {
         "status": "ok",
         "environment": settings.app_env,
     }
+    
+    

@@ -13,6 +13,7 @@ from app.db.models import (
 )
 
 from app.api.deps import DbSession
+from app.services.websocket_manager import manager
 
 from app.services.webhook_service import (
     find_payment_by_metadata,
@@ -336,6 +337,25 @@ async def toss_webhook(
 
         db.commit()
         db.refresh(saved)
+        
+        await manager.send_payment_update(
+                payment_id=payment_db.id,
+                data={
+                    "type": "PAYMENT_STATUS_CHANGED",
+                    "paymentId": payment_db.id,
+                    "status": payment_db.status,
+                    "orderId": order_id,
+                    "paymentKey": payment_key,
+                    "paidAt": (
+                        payment_db.paid_at.isoformat()
+                        if payment_db.paid_at
+                        else None
+                    ),
+                }
+            )
+
+        
+        
         return {
 
             "ok": True,
