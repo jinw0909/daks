@@ -47,18 +47,61 @@ async def toss_webhook(
         # =====================================
         # 1. Payload parsing
         # =====================================
-        event_type = payload.get("eventType")
-        data = payload.get("data", {}) or {}
-        payment = data.get("payment", {}) or {}
-        order_id = payment.get("orderId")
-        payment_key = payment.get("paymentKey")
-        status = payment.get("status")
-        method = payment.get("method")
-        amount = (data.get("amount")or payment.get("totalAmount"))
-        approved_at = payment.get("approvedAt")
-        created_at = data.get("createdAt")
-        receipt_url = (payment.get("receipt", {}) or {}).get("url")
-        meta_fields = (data.get("metaFields", {}) or {})
+        # event_type = payload.get("eventType")
+        # data = payload.get("data", {}) or {}
+        # payment = data.get("payment", {}) or {}
+        # order_id = payment.get("orderId")
+        # payment_key = payment.get("paymentKey")
+        # status = payment.get("status")
+        # method = payment.get("method")
+        # amount = (data.get("amount")or payment.get("totalAmount"))
+        # approved_at = payment.get("approvedAt")
+        # created_at = data.get("createdAt")
+        # receipt_url = (payment.get("receipt", {}) or {}).get("url")
+        # meta_fields = (data.get("metaFields", {}) or {})
+
+
+        # event_type = payload.get("eventType")
+
+        # data = payload.get("data", {}) or {}
+
+        # # Toss webhook 두 가지 타입 대응
+        # if data.get("payment"):
+        #     # ORDER_PAYMENT_STATUS_CHANGED
+        #     payment = data.get("payment", {}) or {}
+        # else:
+        #     # PAYMENT_STATUS_CHANGED
+        #     payment = data
+
+
+        # order_id = payment.get("orderId")
+        # payment_key = payment.get("paymentKey")
+        # status = payment.get("status")
+        # method = payment.get("method")
+
+        # amount = (
+        #     data.get("amount")
+        #     or payment.get("totalAmount")
+        # )
+
+        # approved_at = payment.get("approvedAt")
+
+        # created_at = (
+        #     data.get("createdAt")
+        #     or payload.get("createdAt")
+        # )
+
+        # receipt_url = (
+        #     payment.get("receipt", {}) or {}
+        # ).get("url")
+
+
+        # # metaFields 두 타입 대응
+        # meta_fields = (
+        #     data.get("metaFields")
+        #     or data.get("metadata")
+        #     or {}
+        # )
 
         payment_id = to_int_or_none(
             meta_fields.get("paymentId")
@@ -79,6 +122,7 @@ async def toss_webhook(
         # =====================================
 
         history = WebhookLogHistory(
+            eventType=event_type,
             order_id=order_id,
             payment_key=payment_key,
             ticketuser_id=ticket_user_id,
@@ -107,7 +151,7 @@ async def toss_webhook(
         if not order_id:
 
             raise HTTPException(
-                status_code=400,
+                status_code=200,
                 detail="Missing orderId",
             )
 
@@ -300,6 +344,7 @@ async def toss_webhook(
                 payment_db=payment_db,
                 paid_amount=amount,
                 toss_payment_key=payment_key,
+                order_id=order_id,
                 raw_payload=payload_json,
             )
                         
@@ -353,6 +398,7 @@ async def toss_webhook(
         try:
 
             error_history = WebhookLogHistory(
+                eventType=event_type,
                 order_id=order_id,
                 payment_key=payment_key,
                 ticketuser_id=ticket_user_id,

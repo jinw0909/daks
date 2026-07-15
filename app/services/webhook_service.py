@@ -96,10 +96,12 @@ def apply_common_payment_fields(
     payment_db: Payment,
     paid_amount: int | None,
     toss_payment_key: str | None,
+    order_id: str | None,
     raw_payload: str | None,
 ) -> None:
     payment_db.paid_amount = paid_amount
     payment_db.toss_payment_key = toss_payment_key
+    payment_db.order_id = order_id
     payment_db.raw_payload = raw_payload
 
 
