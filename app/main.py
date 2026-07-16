@@ -51,15 +51,7 @@ app.include_router(admin_api_router)
 app.include_router(admin_page_router)
 app.include_router(public_router)
 
-@app.on_event("startup")
-async def check_routes():
 
-    for route in app.routes:
-        print(
-            route.path,
-            type(route).__name__
-        )
-        
 @app.get("/health")
 def health_check():
     return {

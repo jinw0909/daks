@@ -4,7 +4,10 @@ import json
 import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
+import base64
+import http.client
+import json
+import os
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -21,6 +24,9 @@ from app.services.webhook_service import (
     apply_common_payment_fields,
     to_int_or_none,
 )
+
+
+
 
 router = APIRouter()
 KST = ZoneInfo("Asia/Seoul")
@@ -317,6 +323,21 @@ async def toss_webhook(
             saved.status = (
                 f"UNHANDLED_{status}"
             )
+            
+            if payment_db:
+                before_status = payment_db.status
+                after_status = 4
+
+                add_payment_history(
+                    db=db,
+                    payment_db=payment_db,
+                    before_status=before_status,
+                    after_status=after_status,
+                    reason=f"Unhandled Toss status: {status}",
+                    payload=payload,
+                    now_kst=now_kst,
+                )
+                payment_db.status = after_status
             db.commit()
             db.refresh(saved)
             return {
@@ -339,7 +360,7 @@ async def toss_webhook(
         db.refresh(saved)
         
         await manager.send_payment_update(
-                payment_id=payment_db.id,
+                payment_id=payment_id ,
                 data={
                     "type": "PAYMENT_STATUS_CHANGED",
                     "paymentId": payment_db.id,
