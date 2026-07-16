@@ -13,7 +13,7 @@ class Payment(Base, TimestampMixin):
     STATUS_READY = 1
     STATUS_PAID = 2
     STATUS_FAILED = 3
-    STATUS_CANCELED=4
+    STATUS_CANCELED= 4
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -30,7 +30,7 @@ class Payment(Base, TimestampMixin):
         Integer,
         nullable=False,
         default=STATUS_READY,
-        comment="1: 결제대기, 2: 결제완료, 3: 결제실패",
+        comment="1: 결제대기, 2: 결제완료, 3: 결제실패, 4: 결제 취소",
     )
 
     payment_name: Mapped[str] = mapped_column(
