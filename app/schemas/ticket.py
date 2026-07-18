@@ -92,7 +92,8 @@ class TicketPaymentHistoryRequest(BaseModel):
 
 class TicketPaymentHistoryItem(BaseModel):
     payment_id: int
-    order_id: str | None
+    display_order_id: str
+    # order_id: str | None
     payment_name: str
     amount: int
     status: int
@@ -111,6 +112,8 @@ class TicketPaymentStatusResponse(BaseModel):
     payment_id: int
     ticket_user_id: int
 
+    display_order_id: str
+
     status: int
     status_code: str
     status_name: str
@@ -119,7 +122,7 @@ class TicketPaymentStatusResponse(BaseModel):
     is_success: bool
 
     name: str
-    order_id: str | None
+    # order_id: str | None
     payment_name: str
     amount: int
     quantity: int = 1

@@ -183,7 +183,7 @@ def get_ticket_payment_history(
     payment_items = [
         TicketPaymentHistoryItem(
             payment_id=payment.id,
-            order_id=payment.order_id,
+            display_order_id=payment.display_order_id,
             payment_name=payment.payment_name,
             amount=(
                 payment.paid_amount
@@ -271,7 +271,7 @@ def get_ticket_payment_status(
         is_completed=is_completed,
         is_success=is_success,
         name=payment.ticket_user.name,
-        order_id=payment.order_id,
+        display_order_id=payment.display_order_id,
         payment_name=payment.payment_name,
         amount=amount,
         quantity=1,

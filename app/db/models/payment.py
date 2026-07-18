@@ -20,6 +20,14 @@ class Payment(Base, TimestampMixin):
         autoincrement=True,
     )
 
+    display_order_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=True,
+        unique=True,
+        index=True,
+        comment="사용자에게 표시되는 주문번호. 2026 + payment.id",
+    )
+
     ticket_user_id: Mapped[int] = mapped_column(
         ForeignKey("ticket_users.id"),
         nullable=False,
