@@ -29,7 +29,8 @@ def create_ready_payment(
     # INSERT를 실행해서 autoincrement id를 받아온다.
     db.flush()
 
-    payment.display_order_id = f"2026{payment.id}"
+    # payment.display_order_id = f"2026{payment.id}"
+    payment.display_order_id = f"2026{payment.id:04d}"
 
     # UPDATE를 DB에 반영한다.
     db.flush()
