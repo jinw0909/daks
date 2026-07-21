@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ page_title }}
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+  <div>
+    <a href="/admin/sponsors">
+      ← 스폰서 목록
+    </a>
+
+    <h1>{{ page_title }}</h1>
+
+    <p>
+      스폰서 정보와 Toss LinkPay 상품 정보를 관리합니다.
+    </p>
+  </div>
+</div>
+
+{% if error %}
+<div class="admin-error-message">
+  {{ error }}
+</div>
+{% endif %}
+
+<div class="detail-grid sponsor-form-grid">
+  <section class="detail-card">
+    <h2>스폰서 정보</h2>
+
+    <form
+            method="post"
+            action="{{ form_action }}"
+            class="admin-form sponsor-form"
+    >
+      <label>
+        <span>스폰서명 *</span>
+
+        <input
+                type="text"
+                name="name"
+                value="{{ sponsor.name if sponsor else '' }}"
+                maxlength="150"
+                required
+        >
+      </label>
+
+      <label>
+        <span>구분 *</span>
+
+        <select
+                name="category"
+                required
+        >
+          {% for category_value, category_label in category_labels.items() %}
+          <option
+                  value="{{ category_value }}"
+                  {% if sponsor and sponsor.category == category_value %}selected{% endif %}
+          >
+            {{ category_label }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>
+        <span>웹사이트 URL</span>
+
+        <input
+                type="url"
+                name="website_url"
+                value="{{ sponsor.website_url or '' if sponsor else '' }}"
+                maxlength="500"
+                placeholder="https://..."
+        >
+      </label>
+
+      <label>
+        <span>Toss productKey</span>
+
+        <input
+                type="text"
+                name="toss_product_key"
+                value="{{ sponsor.toss_product_key or '' if sponsor else '' }}"
+                maxlength="255"
+                autocomplete="off"
+                placeholder="Toss LinkPay 상품 productKey"
+        >
+
+        <small>
+          스폰서 결제 웹훅을 구분하는 기준값입니다.
+          다른 스폰서와 중복될 수 없습니다.
+        </small>
+      </label>
+
+      <label>
+        <span>Toss 상품 링크</span>
+
+        <input
+                type="url"
+                name="toss_product_link"
+                value="{{ sponsor.toss_product_link or '' if sponsor else '' }}"
+                maxlength="1000"
+                placeholder="https://buy.tosspayments.com/..."
+        >
+      </label>
+
+      <label>
+        <span>노출 순서</span>
+
+        <input
+                type="number"
+                name="display_order"
+                value="{{ sponsor.display_order if sponsor else 0 }}"
+                min="0"
+        >
+      </label>
+
+      <label class="checkbox-label">
+        <input
+                type="checkbox"
+                name="is_active"
+                value="true"
+                {% if not sponsor or sponsor.is_active %}checked{% endif %}
+        >
+
+        <span>활성 상태</span>
+      </label>
+
+      <div class="form-actions">
+        <a
+                href="{% if sponsor and sponsor.id %}/admin/sponsors/{{ sponsor.id }}{% else %}/admin/sponsors{% endif %}"
+                class="admin-secondary-link"
+        >
+          취소
+        </a>
+
+        <button type="submit">
+          저장
+        </button>
+      </div>
+    </form>
+  </section>
+
+  {% if sponsor and sponsor.id %}
+  <section class="detail-card sponsor-logo-upload-card">
+    <h2>스폰서 로고</h2>
+
+    {% if sponsor.logo_url %}
+    <div class="sponsor-logo-preview sponsor-logo-upload-preview">
+      <img
+              src="{{ sponsor.logo_url }}"
+              alt="{{ sponsor.name }} 로고"
+      >
+    </div>
+    {% else %}
+    <p class="empty-description">
+      등록된 로고 이미지가 없습니다.
+    </p>
+    {% endif %}
+
+    <form
+            method="post"
+            action="/admin/sponsors/{{ sponsor.id }}/logo-image"
+            enctype="multipart/form-data"
+            class="admin-form image-upload-form"
+    >
+      <label>
+        <span>이미지 파일</span>
+
+        <input
+                type="file"
+                name="image"
+                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                required
+        >
+      </label>
+
+      <p class="form-help">
+        JPG, PNG, WEBP 형식 · 최대 5MB
+      </p>
+
+      <button type="submit">
+        {% if sponsor.logo_url %}
+        로고 교체
+        {% else %}
+        로고 업로드
+        {% endif %}
+      </button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     s3_bucket_name: str
     s3_public_base_url: str
     s3_speaker_image_prefix: str = "speakers"
+    s3_sponsor_logo_prefix: str = "sponsors"
 
     toss_ticket_product_link: str
     toss_ticket_product_key: str

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}
+결제 내역 관리
+{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <h1>결제 내역 관리</h1>
+        <p>총 {{ total_count }}건의 결제 정보가 있습니다.</p>
+    </div>
+</section>
+
+<form
+        method="get"
+        action="/admin/payments"
+        class="filter-form"
+>
+    <input
+            type="text"
+            name="keyword"
+            value="{{ keyword }}"
+            placeholder="주문번호, 이름, 연락처, 상품명 검색"
+    >
+
+    <select name="payment_status">
+        <option value="">전체 결제 상태</option>
+
+        <option
+                value="1"
+                {% if selected_payment_status == 1 %}selected{% endif %}
+        >
+            결제 대기
+        </option>
+
+        <option
+                value="2"
+                {% if selected_payment_status == 2 %}selected{% endif %}
+        >
+            결제 완료
+        </option>
+
+        <option
+                value="3"
+                {% if selected_payment_status == 3 %}selected{% endif %}
+        >
+            결제 실패
+        </option>
+
+        <option
+                value="4"
+                {% if selected_payment_status == 4 %}selected{% endif %}
+        >
+            결제 취소
+        </option>
+    </select>
+
+    <button type="submit">검색</button>
+
+    {% if keyword or selected_payment_status is not none %}
+    <a
+            href="/admin/payments"
+            class="filter-reset-button"
+    >
+        초기화
+    </a>
+    {% endif %}
+</form>
+
+<div class="table-wrapper">
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>표시 주문번호</th>
+            <th>신청자</th>
+            <th>연락처</th>
+            <th>상품명</th>
+            <th>결제 상태</th>
+            <th>예정 금액</th>
+            <th>실결제 금액</th>
+            <th>Toss 주문번호</th>
+            <th>결제일</th>
+            <th>생성일</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for payment in payments %}
+        <tr>
+            <td>
+                <a href="/admin/payments/{{ payment.id }}">
+                    {{ payment.display_order_id or payment.id }}
+                </a>
+            </td>
+
+            <td>
+                <a href="/admin/tickets/{{ payment.ticket_user.id }}">
+                    {{ payment.ticket_user.name }}
+                </a>
+            </td>
+
+            <td>{{ payment.ticket_user.phone }}</td>
+            <td>{{ payment.payment_name }}</td>
+
+            <td>
+                {% if payment.status == 1 %}
+                <span class="status-badge status-ready">
+                    결제 대기
+                </span>
+                {% elif payment.status == 2 %}
+                <span class="status-badge status-paid">
+                    결제 완료
+                </span>
+                {% elif payment.status == 3 %}
+                <span class="status-badge status-failed">
+                    결제 실패
+                </span>
+                {% elif payment.status == 4 %}
+                <span class="status-badge status-canceled">
+                    결제 취소
+                </span>
+                {% else %}
+                <span class="status-badge">
+                    상태 확인 필요
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ "{:,}".format(payment.expected_amount) }}원
+            </td>
+
+            <td>
+                {% if payment.paid_amount is not none %}
+                {{ "{:,}".format(payment.paid_amount) }}원
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>{{ payment.order_id or "-" }}</td>
+
+            <td>
+                {% if payment.paid_at %}
+                {{ payment.paid_at.strftime("%Y-%m-%d %H:%M") }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>
+                {{ payment.created_at.strftime("%Y-%m-%d %H:%M") }}
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td colspan="10" class="empty-cell">
+                조건에 맞는 결제 내역이 없습니다.
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<nav class="pagination">
+    {% for page_number in range(1, total_pages + 1) %}
+    <a
+            href="/admin/payments?page={{ page_number }}{% if selected_payment_status is not none %}&payment_status={{ selected_payment_status }}{% endif %}{% if keyword %}&keyword={{ keyword | urlencode }}{% endif %}"
+            class="{% if page_number == current_page %}active{% endif %}"
+    >
+        {{ page_number }}
+    </a>
+    {% endfor %}
+</nav>
+{% endif %}
+
+<script>
+    const filterForm = document.querySelector(".filter-form");
+
+    filterForm?.addEventListener("submit", () => {
+        const fields = filterForm.querySelectorAll(
+            "input, select"
+        );
+
+        fields.forEach((field) => {
+            if (!field.value.trim()) {
+                field.disabled = true;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}
+웹훅 관리
+{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <h1>웹훅 관리</h1>
+        <p>
+            결제 거래 {{ total_count }}건,
+            검증 필요 {{ issue_count }}건
+        </p>
+    </div>
+</section>
+
+<div class="webhook-summary-grid">
+    <a
+            href="/admin/webhooks"
+            class="webhook-summary-card"
+    >
+        <span>전체 거래</span>
+        <strong>{{ summary.total }}</strong>
+    </a>
+
+    <a
+            href="/admin/webhooks?issue=NORMAL"
+            class="webhook-summary-card"
+    >
+        <span>정상 거래</span>
+        <strong>{{ summary.normal }}</strong>
+    </a>
+
+    <a
+            href="/admin/webhooks?issue=PAYMENT_ID_MISSING"
+            class="webhook-summary-card issue"
+    >
+        <span>Payment ID 누락</span>
+        <strong>
+            {{ summary.payment_id_missing }}
+        </strong>
+    </a>
+
+    <a
+            href="/admin/webhooks?issue=DUPLICATE_PAYMENT"
+            class="webhook-summary-card issue"
+    >
+        <span>중복 결제</span>
+        <strong>
+            {{ summary.duplicate_payment }}
+        </strong>
+    </a>
+</div>
+
+<form
+        method="get"
+        action="/admin/webhooks"
+        class="filter-form webhook-filter-form"
+>
+    <div class="webhook-filter-row webhook-filter-main-row">
+        <input
+                type="text"
+                name="keyword"
+                value="{{ keyword }}"
+                class="webhook-filter-keyword"
+                placeholder="결제자, paymentKey, 상품명, 주문번호, Payment ID 검색"
+        >
+
+        <select name="source">
+            <option value="">
+                전체 구분
+            </option>
+
+            <option
+                    value="TICKET"
+                    {% if selected_source == "TICKET" %}selected{% endif %}
+            >
+            일반 티켓
+            </option>
+
+            <option
+                    value="SPONSOR"
+                    {% if selected_source == "SPONSOR" %}selected{% endif %}
+            >
+            스폰서
+            </option>
+
+            <option
+                    value="UNKNOWN"
+                    {% if selected_source == "UNKNOWN" %}selected{% endif %}
+            >
+            미등록 상품
+            </option>
+        </select>
+
+        <select name="status">
+            <option value="">
+                전체 Toss 상태
+            </option>
+
+            <option
+                    value="DONE"
+                    {% if selected_status == "DONE" %}selected{% endif %}
+            >
+            결제 완료
+            </option>
+
+            <option
+                    value="CANCELED"
+                    {% if selected_status == "CANCELED" %}selected{% endif %}
+            >
+            결제 취소
+            </option>
+
+            <option
+                    value="PARTIAL_CANCELED"
+                    {% if selected_status == "PARTIAL_CANCELED" %}selected{% endif %}
+            >
+            부분 취소
+            </option>
+
+            <option
+                    value="ABORTED"
+                    {% if selected_status == "ABORTED" %}selected{% endif %}
+            >
+            결제 중단
+            </option>
+
+            <option
+                    value="EXPIRED"
+                    {% if selected_status == "EXPIRED" %}selected{% endif %}
+            >
+            결제 만료
+            </option>
+        </select>
+
+        <select name="issue">
+            <option value="">
+                전체 검증 결과
+            </option>
+
+            <option
+                    value="NORMAL"
+                    {% if selected_issue == "NORMAL" %}selected{% endif %}
+            >
+            정상
+            </option>
+
+            <option
+                    value="PAYMENT_ID_MISSING"
+                    {% if selected_issue == "PAYMENT_ID_MISSING" %}selected{% endif %}
+            >
+            Payment ID 누락
+            </option>
+
+            <option
+                    value="PAYMENT_NOT_FOUND"
+                    {% if selected_issue == "PAYMENT_NOT_FOUND" %}selected{% endif %}
+            >
+            Payment 조회 실패
+            </option>
+
+            <option
+                    value="DUPLICATE_PAYMENT"
+                    {% if selected_issue == "DUPLICATE_PAYMENT" %}selected{% endif %}
+            >
+            중복 결제
+            </option>
+
+            <option
+                    value="PAYMENT_KEY_MISMATCH"
+                    {% if selected_issue == "PAYMENT_KEY_MISMATCH" %}selected{% endif %}
+            >
+            Payment Key 불일치
+            </option>
+        </select>
+    </div>
+
+    <div class="webhook-filter-row webhook-filter-date-row">
+        <div class="webhook-date-range">
+            <span class="webhook-date-range-title">
+                수신 일시
+            </span>
+
+            <label class="webhook-date-field">
+                <span>시작</span>
+
+                <input
+                        type="datetime-local"
+                        name="received_from"
+                        value="{{ selected_received_from }}"
+                >
+            </label>
+
+            <span class="webhook-date-separator">
+                ~
+            </span>
+
+            <label class="webhook-date-field">
+                <span>종료</span>
+
+                <input
+                        type="datetime-local"
+                        name="received_to"
+                        value="{{ selected_received_to }}"
+                >
+            </label>
+        </div>
+
+        <div class="webhook-filter-actions">
+            <button
+                    type="submit"
+                    class="webhook-filter-submit"
+            >
+                검색
+            </button>
+
+            {% if (
+            keyword
+            or selected_source
+            or selected_status
+            or selected_issue
+            or selected_received_from
+            or selected_received_to
+            ) %}
+            <a
+                    href="/admin/webhooks"
+                    class="webhook-filter-reset"
+            >
+                초기화
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+<div class="table-wrapper">
+    <table class="admin-table webhook-table">
+        <thead>
+        <tr>
+            <th>수신일</th>
+            <th>상품</th>
+            <th>구분</th>
+            <th>결제자</th>
+            <th>Payment ID</th>
+            <th>Payment Key</th>
+            <th>금액</th>
+            <th>Toss 상태</th>
+            <th>검증 결과</th>
+            <th>수신</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for item in transactions %}
+        <tr>
+            <td>
+                {% if item.last_received_at %}
+                {{ item.last_received_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>
+                <strong>
+                    {{ item.product_name or item.source_label }}
+                </strong>
+
+                {% if item.product_key %}
+                <div class="table-code">
+                    {{ item.product_key }}
+                </div>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if item.source_type == "TICKET" %}
+                <span class="status-badge webhook-ticket">
+                    일반 티켓
+                </span>
+
+                {% elif item.source_type == "SPONSOR" %}
+                <span class="status-badge webhook-sponsor">
+                    {{ item.sponsor_name }}
+                </span>
+
+                {% else %}
+                <span class="status-badge webhook-unknown">
+                    미등록 상품
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if item.customer_name %}
+                {{ item.customer_name }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>
+                {% if item.payment_id is not none %}
+                {{ item.payment_id }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>
+                <a
+                        href="/admin/webhooks/{{ item.payment_key }}"
+                        class="table-code webhook-payment-key"
+                >
+                    {{ item.payment_key }}
+                </a>
+            </td>
+
+            <td>
+                {% if item.amount is not none %}
+                {{ "{:,}".format(item.amount) }}원
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>
+                {% if item.status == "DONE" %}
+                <span class="status-badge webhook-done">
+                    DONE
+                </span>
+
+                {% elif item.status in ["CANCELED", "PARTIAL_CANCELED"] %}
+                <span class="status-badge webhook-canceled">
+                    {{ item.status }}
+                </span>
+
+                {% elif item.status in ["ABORTED", "EXPIRED"] %}
+                <span class="status-badge webhook-other">
+                    {{ item.status }}
+                </span>
+
+                {% elif item.status %}
+                <span class="status-badge webhook-other">
+                    {{ item.status }}
+                </span>
+
+                {% else %}
+                <span class="status-badge webhook-empty">
+                    상태 없음
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if item.issue_code %}
+                <span class="status-badge webhook-issue">
+                    {{ item.issue_label }}
+                </span>
+                {% else %}
+                <span class="status-badge webhook-normal">
+                    정상
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ item.event_count }}회
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td
+                    colspan="10"
+                    class="empty-cell"
+            >
+                조건에 맞는 거래가 없습니다.
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<nav class="pagination">
+    {% for page_number in range(1, total_pages + 1) %}
+    <a
+            href="/admin/webhooks?page={{ page_number }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_issue %}&issue={{ selected_issue }}{% endif %}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+            class="{% if page_number == current_page %}active{% endif %}"
+    >
+        {{ page_number }}
+    </a>
+    {% endfor %}
+</nav>
+{% endif %}
+{% endblock %}

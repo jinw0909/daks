@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}
+스폰서 관리
+{% endblock %}
+
+{% block content %}
+<section class="page-heading sponsor-page-heading">
+    <div>
+        <h1>스폰서 관리</h1>
+        <p>총 {{ total_count }}개의 스폰서가 등록되어 있습니다.</p>
+    </div>
+
+    <a
+            href="/admin/sponsors/new"
+            class="admin-primary-link"
+    >
+        스폰서 등록
+    </a>
+</section>
+
+<form
+        method="get"
+        action="/admin/sponsors"
+        class="filter-form"
+>
+    <input
+            type="text"
+            name="keyword"
+            value="{{ keyword }}"
+            placeholder="스폰서명, productKey, 웹사이트 검색"
+    >
+
+    <select name="category">
+        <option value="">전체 구분</option>
+
+        {% for category_value, category_label in category_labels.items() %}
+        <option
+                value="{{ category_value }}"
+                {% if selected_category == category_value %}selected{% endif %}
+        >
+            {{ category_label }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <select name="active">
+        <option value="">전체 상태</option>
+
+        <option
+                value="true"
+                {% if selected_active == "true" %}selected{% endif %}
+        >
+        활성
+        </option>
+
+        <option
+                value="false"
+                {% if selected_active == "false" %}selected{% endif %}
+        >
+        비활성
+        </option>
+    </select>
+
+    <button type="submit">
+        검색
+    </button>
+</form>
+
+<div class="table-wrapper">
+    <table class="admin-table sponsor-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>로고</th>
+            <th>스폰서명</th>
+            <th>구분</th>
+            <th>Toss 상품</th>
+            <th>노출 순서</th>
+            <th>상태</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for sponsor in sponsors %}
+        <tr>
+            <td>{{ sponsor.id }}</td>
+
+            <td>
+                {% if sponsor.logo_url %}
+                <div class="sponsor-logo-thumb">
+                    <img
+                            src="{{ sponsor.logo_url }}"
+                            alt="{{ sponsor.name }}"
+                    >
+                </div>
+                {% else %}
+                <span class="muted-text">
+                    없음
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="/admin/sponsors/{{ sponsor.id }}">
+                    <strong>{{ sponsor.name }}</strong>
+                </a>
+
+                {% if sponsor.website_url %}
+                <div class="table-subtext">
+                    {{ sponsor.website_url }}
+                </div>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ category_labels.get(sponsor.category, "알 수 없음") }}
+            </td>
+
+            <td>
+                {% if sponsor.toss_product_key %}
+                <span class="status-badge status-connected">
+                    연결됨
+                </span>
+
+                <div class="table-code">
+                    {{ sponsor.toss_product_key }}
+                </div>
+                {% else %}
+                <span class="status-badge status-unconnected">
+                    미연결
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ sponsor.display_order }}
+            </td>
+
+            <td>
+                {% if sponsor.is_active %}
+                <span class="status-badge status-active">
+                    활성
+                </span>
+                {% else %}
+                <span class="status-badge status-inactive">
+                    비활성
+                </span>
+                {% endif %}
+            </td>
+
+            <td>
+                <a
+                        href="/admin/sponsors/{{ sponsor.id }}/edit"
+                        class="table-action-link"
+                >
+                    수정
+                </a>
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td
+                    colspan="8"
+                    class="empty-cell"
+            >
+                조건에 맞는 스폰서가 없습니다.
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<nav class="pagination">
+    {% for page_number in range(1, total_pages + 1) %}
+    <a
+            href="/admin/sponsors?page={{ page_number }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category is not none %}&category={{ selected_category }}{% endif %}{% if selected_active %}&active={{ selected_active }}{% endif %}"
+            class="{% if page_number == current_page %}active{% endif %}"
+    >
+        {{ page_number }}
+    </a>
+    {% endfor %}
+</nav>
+{% endif %}
+{% endblock %}

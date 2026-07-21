@@ -1,0 +1,1347 @@
+{% extends "base.html" %}
+
+{% block title %}
+결제 통계
+{% endblock %}
+
+{% block page_css %}
+<link
+        rel="stylesheet"
+        href="{{ url_for('admin-static', path='/css/statistics.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+<section class="page-heading statistics-page-heading">
+    <div>
+        <h1>결제 통계</h1>
+        <p>
+            일반 티켓과 스폰서 결제 현황을 기간별로 확인합니다.
+        </p>
+    </div>
+</section>
+
+<nav class="statistics-tabs">
+    <a
+            href="/admin/statistics?tab=overview{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+            class="statistics-tab {% if selected_tab == 'overview' %}active{% endif %}"
+    >
+        전체 통계
+    </a>
+
+    <a
+            href="/admin/statistics?tab=tickets{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+            class="statistics-tab {% if selected_tab == 'tickets' %}active{% endif %}"
+    >
+        일반 티켓
+    </a>
+
+    <a
+            href="/admin/statistics?tab=sponsors{% if selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+            class="statistics-tab {% if selected_tab == 'sponsors' %}active{% endif %}"
+    >
+        스폰서
+    </a>
+</nav>
+
+<section class="statistics-filter-card">
+    <form
+            method="get"
+            action="/admin/statistics"
+            class="statistics-filter-form"
+    >
+        <input
+                type="hidden"
+                name="tab"
+                value="{{ selected_tab }}"
+        >
+
+        {% if selected_tab == "sponsors" and selected_sponsor_id %}
+        <input
+                type="hidden"
+                name="sponsor_id"
+                value="{{ selected_sponsor_id }}"
+        >
+        {% endif %}
+
+        <div class="statistics-period-buttons">
+            <a
+                    href="/admin/statistics?tab={{ selected_tab }}&period=today{% if selected_tab == "sponsors" and selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}"
+            class="statistics-period-button {% if selected_period == 'today' %}active{% endif %}"
+            >
+            오늘
+            </a>
+
+            <a
+                    href="/admin/statistics?tab={{ selected_tab }}&period=7days{% if selected_tab == "sponsors" and selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}"
+            class="statistics-period-button {% if selected_period == '7days' %}active{% endif %}"
+            >
+            최근 7일
+            </a>
+
+            <a
+                    href="/admin/statistics?tab={{ selected_tab }}&period=30days{% if selected_tab == "sponsors" and selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}"
+            class="statistics-period-button {% if selected_period == '30days' %}active{% endif %}"
+            >
+            최근 30일
+            </a>
+
+            <a
+                    href="/admin/statistics?tab={{ selected_tab }}&period=all{% if selected_tab == "sponsors" and selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}"
+            class="statistics-period-button {% if selected_period == 'all' or not selected_received_from and not selected_received_to %}active{% endif %}"
+            >
+            전체
+            </a>
+        </div>
+
+        <div class="statistics-custom-period">
+            <label class="statistics-date-field">
+                <span>시작 일시</span>
+
+                <input
+                        type="datetime-local"
+                        name="received_from"
+                        value="{{ selected_received_from }}"
+                >
+            </label>
+
+            <span class="statistics-date-separator">
+                ~
+            </span>
+
+            <label class="statistics-date-field">
+                <span>종료 일시</span>
+
+                <input
+                        type="datetime-local"
+                        name="received_to"
+                        value="{{ selected_received_to }}"
+                >
+            </label>
+
+            <div class="statistics-filter-actions">
+                <button
+                        type="submit"
+                        class="statistics-search-button"
+                >
+                    조회
+                </button>
+
+                {% if selected_received_from or selected_received_to %}
+                <a
+                        href="/admin/statistics?tab={{ selected_tab }}&period=all{% if selected_tab == "sponsors" and selected_sponsor_id %}&sponsor_id={{ selected_sponsor_id }}{% endif %}"
+                class="statistics-reset-button"
+                >
+                초기화
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</section>
+
+{% if selected_received_from or selected_received_to %}
+<div class="statistics-period-notice">
+    <strong>조회 기간</strong>
+
+    <span>
+        {{ selected_received_from or "처음" }}
+        ~
+        {{ selected_received_to or "현재" }}
+    </span>
+</div>
+{% endif %}
+
+{% if selected_tab == "overview" %}
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>전체 결제 현황</h2>
+            <p>
+                일반 티켓과 스폰서 결제를 합산한 현재 유효 거래 기준입니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="statistics-card-grid statistics-card-grid-primary">
+        <article class="statistics-card statistics-card-highlight">
+            <span class="statistics-card-label">
+                현재 유효 매출
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(overview.summary.valid_amount) }}원
+            </strong>
+
+            <small>
+                최종 Toss 상태가 DONE인 거래
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                유효 결제 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(overview.summary.valid_transaction_count) }}건
+            </strong>
+
+            <small>
+                paymentKey 기준
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                판매 티켓 수량
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(overview.ticket.ticket_quantity) }}장
+            </strong>
+
+            <small>
+                티켓 유효 결제 금액 ÷ {{ "{:,}".format(ticket_unit_price) }}원
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                전액 취소 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(overview.summary.canceled_count) }}건
+            </strong>
+
+            <small>
+                {{ "{:,}".format(overview.summary.canceled_amount) }}원
+            </small>
+        </article>
+    </div>
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>결제 구분별 현황</h2>
+            <p>
+                일반 티켓, 스폰서, 미등록 상품을 구분한 통계입니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="statistics-source-grid">
+        <article class="statistics-source-card">
+            <div class="statistics-source-heading">
+                <span class="status-badge webhook-ticket">
+                    일반 티켓
+                </span>
+
+                <strong>
+                    {{ "{:,}".format(overview.ticket.valid_amount) }}원
+                </strong>
+            </div>
+
+            <dl class="statistics-compact-list">
+                <dt>완료 결제</dt>
+                <dd>
+                    {{ overview.ticket.valid_transaction_count }}건
+                </dd>
+
+                <dt>판매 수량</dt>
+                <dd>
+                    {{ overview.ticket.ticket_quantity }}장
+                </dd>
+
+                <dt>전액 취소</dt>
+                <dd>
+                    {{ overview.ticket.canceled_count }}건
+                </dd>
+
+                <dt>부분 취소</dt>
+                <dd>
+                    {{ overview.ticket.partial_canceled_count }}건
+                </dd>
+            </dl>
+        </article>
+
+        <article class="statistics-source-card">
+            <div class="statistics-source-heading">
+                <span class="status-badge webhook-sponsor">
+                    스폰서
+                </span>
+
+                <strong>
+                    {{ "{:,}".format(overview.sponsor.valid_amount) }}원
+                </strong>
+            </div>
+
+            <dl class="statistics-compact-list">
+                <dt>완료 결제</dt>
+                <dd>
+                    {{ overview.sponsor.valid_transaction_count }}건
+                </dd>
+
+                <dt>전액 취소</dt>
+                <dd>
+                    {{ overview.sponsor.canceled_count }}건
+                </dd>
+
+                <dt>부분 취소</dt>
+                <dd>
+                    {{ overview.sponsor.partial_canceled_count }}건
+                </dd>
+
+                <dt>실패·만료</dt>
+                <dd>
+                    {{ overview.sponsor.failed_count }}건
+                </dd>
+            </dl>
+        </article>
+
+        <article class="statistics-source-card">
+            <div class="statistics-source-heading">
+                <span class="status-badge webhook-unknown">
+                    미등록 상품
+                </span>
+
+                <strong>
+                    {{ "{:,}".format(overview.unknown.valid_amount) }}원
+                </strong>
+            </div>
+
+            <dl class="statistics-compact-list">
+                <dt>완료 결제</dt>
+                <dd>
+                    {{ overview.unknown.valid_transaction_count }}건
+                </dd>
+
+                <dt>전액 취소</dt>
+                <dd>
+                    {{ overview.unknown.canceled_count }}건
+                </dd>
+
+                <dt>부분 취소</dt>
+                <dd>
+                    {{ overview.unknown.partial_canceled_count }}건
+                </dd>
+
+                <dt>실패·만료</dt>
+                <dd>
+                    {{ overview.unknown.failed_count }}건
+                </dd>
+            </dl>
+        </article>
+    </div>
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>일자별 결제 현황</h2>
+            <p>
+                거래의 마지막 ORDER 웹훅 수신일을 기준으로 집계합니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-daily-table">
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>완료 건수</th>
+                <th>완료 금액</th>
+                <th>티켓 수량</th>
+                <th>전액 취소</th>
+                <th>취소 금액</th>
+                <th>부분 취소</th>
+                <th>실패·만료</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in overview.daily_statistics %}
+            <tr>
+                <td>
+                    <strong>
+                        {{ item.date.strftime("%Y-%m-%d") }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ item.valid_transaction_count }}건
+                </td>
+
+                <td>
+                    {{ "{:,}".format(item.valid_amount) }}원
+                </td>
+
+                <td>
+                    {{ item.ticket_quantity }}장
+                </td>
+
+                <td>
+                    {{ item.canceled_count }}건
+                </td>
+
+                <td>
+                    {{ "{:,}".format(item.canceled_amount) }}원
+                </td>
+
+                <td>
+                    {{ item.partial_canceled_count }}건
+                </td>
+
+                <td>
+                    {{ item.failed_count }}건
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="8"
+                        class="empty-cell"
+                >
+                    조회 기간에 해당하는 결제 통계가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>최근 거래</h2>
+            <p>
+                선택한 기간 내 최근 ORDER 웹훅 거래입니다.
+            </p>
+        </div>
+
+        <a
+                href="/admin/webhooks"
+                class="statistics-section-link"
+        >
+            웹훅 전체 보기
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-transaction-table">
+            <thead>
+            <tr>
+                <th>수신일</th>
+                <th>구분</th>
+                <th>상품</th>
+                <th>결제자</th>
+                <th>금액</th>
+                <th>상태</th>
+                <th>검증</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in overview.recent_transactions %}
+            <tr>
+                <td>
+                    {% if item.last_received_at %}
+                    {{ item.last_received_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.source_type == "TICKET" %}
+                    <span class="status-badge webhook-ticket">
+                        일반 티켓
+                    </span>
+
+                    {% elif item.source_type == "SPONSOR" %}
+                    <span class="status-badge webhook-sponsor">
+                        {{ item.sponsor_name or "스폰서" }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-unknown">
+                        미등록 상품
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a
+                            href="/admin/webhooks/{{ item.payment_key }}"
+                            class="statistics-transaction-link"
+                    >
+                        {{ item.product_name or item.source_label }}
+                    </a>
+                </td>
+
+                <td>
+                    {{ item.customer_name or "-" }}
+                </td>
+
+                <td>
+                    {% if item.amount is not none %}
+                    {{ "{:,}".format(item.amount) }}원
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.status == "DONE" %}
+                    <span class="status-badge webhook-done">
+                        DONE
+                    </span>
+
+                    {% elif item.status in ["CANCELED", "PARTIAL_CANCELED"] %}
+                    <span class="status-badge webhook-canceled">
+                        {{ item.status }}
+                    </span>
+
+                    {% elif item.status %}
+                    <span class="status-badge webhook-other">
+                        {{ item.status }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-empty">
+                        상태 없음
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.issue_code %}
+                    <span class="status-badge webhook-issue">
+                        {{ item.issue_label }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-normal">
+                        정상
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="7"
+                        class="empty-cell"
+                >
+                    조회 기간에 해당하는 거래가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% elif selected_tab == "tickets" %}
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>일반 티켓 통계</h2>
+            <p>
+                내부 Payment ID와 연결되는 일반 티켓 결제 현황입니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="statistics-card-grid statistics-card-grid-primary">
+        <article class="statistics-card statistics-card-highlight">
+            <span class="statistics-card-label">
+                티켓 유효 매출
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(ticket_statistics.summary.valid_amount) }}원
+            </strong>
+
+            <small>
+                최종 상태가 DONE인 티켓 결제
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                완료 결제 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ ticket_statistics.summary.valid_transaction_count }}건
+            </strong>
+
+            <small>
+                paymentKey 기준
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                판매 티켓 수량
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ ticket_statistics.summary.ticket_quantity }}장
+            </strong>
+
+            <small>
+                건당 금액을 {{ "{:,}".format(ticket_unit_price) }}원으로 계산
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                전액 취소 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ ticket_statistics.summary.canceled_count }}건
+            </strong>
+
+            <small>
+                {{ "{:,}".format(ticket_statistics.summary.canceled_amount) }}원
+            </small>
+        </article>
+    </div>
+
+    {% if ticket_statistics.summary.invalid_ticket_amount_count > 0 %}
+    <div class="admin-warning-message statistics-warning-message">
+        <strong>
+            티켓 수량 계산 불가 거래
+            {{ ticket_statistics.summary.invalid_ticket_amount_count }}건
+        </strong>
+
+        <p>
+            결제 금액이 {{ "{:,}".format(ticket_unit_price) }}원으로 나누어떨어지지 않아
+            판매 수량에서 제외됐습니다.
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>내부 연결 검증</h2>
+            <p>
+                티켓 웹훅과 내부 Payment 연결 상태를 확인합니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="statistics-issue-grid">
+        <a
+                href="/admin/webhooks?source=TICKET&issue=PAYMENT_ID_MISSING"
+                class="statistics-issue-card {% if ticket_statistics.issue_summary.payment_id_missing > 0 %}issue{% endif %}"
+        >
+            <span>Payment ID 누락</span>
+
+            <strong>
+                {{ ticket_statistics.issue_summary.payment_id_missing }}
+            </strong>
+        </a>
+
+        <a
+                href="/admin/webhooks?source=TICKET&issue=PAYMENT_NOT_FOUND"
+                class="statistics-issue-card {% if ticket_statistics.issue_summary.payment_not_found > 0 %}issue{% endif %}"
+        >
+            <span>Payment 조회 실패</span>
+
+            <strong>
+                {{ ticket_statistics.issue_summary.payment_not_found }}
+            </strong>
+        </a>
+
+        <a
+                href="/admin/webhooks?source=TICKET&issue=DUPLICATE_PAYMENT"
+                class="statistics-issue-card {% if ticket_statistics.issue_summary.duplicate_payment > 0 %}issue{% endif %}"
+        >
+            <span>중복 결제</span>
+
+            <strong>
+                {{ ticket_statistics.issue_summary.duplicate_payment }}
+            </strong>
+        </a>
+
+        <a
+                href="/admin/webhooks?source=TICKET&issue=PAYMENT_KEY_MISMATCH"
+                class="statistics-issue-card {% if ticket_statistics.issue_summary.payment_key_mismatch > 0 %}issue{% endif %}"
+        >
+            <span>Payment Key 불일치</span>
+
+            <strong>
+                {{ ticket_statistics.issue_summary.payment_key_mismatch }}
+            </strong>
+        </a>
+    </div>
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>일자별 티켓 판매</h2>
+            <p>
+                일자별 티켓 완료 금액과 판매 수량입니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-daily-table">
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>완료 결제</th>
+                <th>티켓 매출</th>
+                <th>판매 수량</th>
+                <th>전액 취소</th>
+                <th>취소 금액</th>
+                <th>부분 취소</th>
+                <th>실패·만료</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in ticket_statistics.daily_statistics %}
+            <tr>
+                <td>
+                    <strong>
+                        {{ item.date.strftime("%Y-%m-%d") }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ item.valid_transaction_count }}건
+                </td>
+
+                <td>
+                    {{ "{:,}".format(item.valid_amount) }}원
+                </td>
+
+                <td>
+                    {{ item.ticket_quantity }}장
+                </td>
+
+                <td>
+                    {{ item.canceled_count }}건
+                </td>
+
+                <td>
+                    {{ "{:,}".format(item.canceled_amount) }}원
+                </td>
+
+                <td>
+                    {{ item.partial_canceled_count }}건
+                </td>
+
+                <td>
+                    {{ item.failed_count }}건
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="8"
+                        class="empty-cell"
+                >
+                    조회 기간에 해당하는 티켓 판매 내역이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>티켓 거래 목록</h2>
+            <p>
+                선택한 기간에 포함된 일반 티켓 거래입니다.
+            </p>
+        </div>
+
+        <a
+                href="/admin/webhooks?source=TICKET"
+                class="statistics-section-link"
+        >
+            웹훅 목록에서 보기
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-ticket-table">
+            <thead>
+            <tr>
+                <th>수신일</th>
+                <th>결제자</th>
+                <th>Payment ID</th>
+                <th>금액</th>
+                <th>수량</th>
+                <th>Toss 상태</th>
+                <th>내부 상태</th>
+                <th>검증 결과</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in ticket_statistics.transactions.items %}
+            <tr>
+                <td>
+                    {% if item.last_received_at %}
+                    {{ item.last_received_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ item.customer_name or "-" }}
+                </td>
+
+                <td>
+                    {% if item.payment_id is not none %}
+                    <a
+                            href="/admin/webhooks/{{ item.payment_key }}"
+                            class="statistics-transaction-link"
+                    >
+                        {{ item.payment_id }}
+                    </a>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.amount is not none %}
+                    {{ "{:,}".format(item.amount) }}원
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.status == "DONE" and item.amount and item.amount % ticket_unit_price == 0 %}
+                    {{ item.amount // ticket_unit_price }}장
+                    {% elif item.status == "DONE" %}
+                    <span class="status-badge webhook-issue">
+                        계산 불가
+                    </span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.status == "DONE" %}
+                    <span class="status-badge webhook-done">
+                        DONE
+                    </span>
+
+                    {% elif item.status in ["CANCELED", "PARTIAL_CANCELED"] %}
+                    <span class="status-badge webhook-canceled">
+                        {{ item.status }}
+                    </span>
+
+                    {% elif item.status %}
+                    <span class="status-badge webhook-other">
+                        {{ item.status }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-empty">
+                        상태 없음
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ item.payment_status if item.payment_status is not none else "-" }}
+                </td>
+
+                <td>
+                    {% if item.issue_code %}
+                    <span class="status-badge webhook-issue">
+                        {{ item.issue_label }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-normal">
+                        정상
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="8"
+                        class="empty-cell"
+                >
+                    조회 기간에 해당하는 티켓 거래가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if ticket_statistics.transactions.total_pages > 1 %}
+    <nav class="statistics-pagination">
+        {% if ticket_statistics.transactions.current_page > 1 %}
+        <a
+                href="/admin/statistics?tab=tickets&ticket_page={{ ticket_statistics.transactions.current_page - 1 }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link"
+        >
+            이전
+        </a>
+        {% endif %}
+
+        {% for page_number in range(1, ticket_statistics.transactions.total_pages + 1) %}
+        {% if
+        page_number == 1
+        or page_number == ticket_statistics.transactions.total_pages
+        or (
+        page_number >= ticket_statistics.transactions.current_page - 2
+        and page_number <= ticket_statistics.transactions.current_page + 2
+        )
+        %}
+        <a
+                href="/admin/statistics?tab=tickets&ticket_page={{ page_number }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link {% if page_number == ticket_statistics.transactions.current_page %}active{% endif %}"
+        >
+            {{ page_number }}
+        </a>
+        {% elif
+        page_number == ticket_statistics.transactions.current_page - 3
+        or page_number == ticket_statistics.transactions.current_page + 3
+        %}
+        <span class="statistics-page-ellipsis">…</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if ticket_statistics.transactions.current_page < ticket_statistics.transactions.total_pages %}
+        <a
+                href="/admin/statistics?tab=tickets&ticket_page={{ ticket_statistics.transactions.current_page + 1 }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link"
+        >
+            다음
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    <p class="statistics-table-notice">
+        총 {{ ticket_statistics.transactions.total_count }}건
+        · 페이지당 {{ ticket_statistics.transactions.page_size }}건
+    </p>
+</section>
+
+{% elif selected_tab == "sponsors" %}
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>스폰서 결제 통계</h2>
+            <p>
+                Toss 상품 키가 등록된 스폰서만 집계합니다.
+            </p>
+        </div>
+
+        <a
+                href="/admin/sponsors"
+                class="statistics-section-link"
+        >
+            스폰서 관리
+        </a>
+    </div>
+
+    <div class="statistics-card-grid statistics-card-grid-primary">
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                결제 연결 스폰서
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ sponsor_statistics.connected_sponsor_count }}개
+            </strong>
+
+            <small>
+                toss_product_key 등록 기준
+            </small>
+        </article>
+
+        <article class="statistics-card statistics-card-highlight">
+            <span class="statistics-card-label">
+                스폰서 유효 매출
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ "{:,}".format(sponsor_statistics.valid_amount) }}원
+            </strong>
+
+            <small>
+                최종 상태가 DONE인 스폰서 거래
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                완료 결제 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ sponsor_statistics.valid_transaction_count }}건
+            </strong>
+
+            <small>
+                paymentKey 기준
+            </small>
+        </article>
+
+        <article class="statistics-card">
+            <span class="statistics-card-label">
+                전액 취소 건수
+            </span>
+
+            <strong class="statistics-card-value">
+                {{ sponsor_statistics.canceled_count }}건
+            </strong>
+
+            <small>
+                {{ "{:,}".format(sponsor_statistics.canceled_amount) }}원
+            </small>
+        </article>
+    </div>
+
+    {% if sponsor_statistics.partial_canceled_count > 0 %}
+    <div class="admin-warning-message statistics-warning-message">
+        <strong>
+            부분 취소 거래
+            {{ sponsor_statistics.partial_canceled_count }}건
+        </strong>
+
+        <p>
+            부분 취소 금액 {{ "{:,}".format(sponsor_statistics.partial_canceled_amount) }}원이
+            별도로 집계되어 있습니다.
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+<section class="statistics-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>스폰서별 결제 현황</h2>
+            <p>
+                스폰서명을 선택하면 같은 페이지 아래에서 전체 거래를 확인할 수 있습니다.
+            </p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-sponsor-table">
+            <thead>
+            <tr>
+                <th>스폰서</th>
+                <th>상품 키</th>
+                <th>상태</th>
+                <th>완료 건수</th>
+                <th>유효 매출</th>
+                <th>전액 취소</th>
+                <th>부분 취소</th>
+                <th>실패·만료</th>
+                <th>최근 거래</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in sponsor_statistics.sponsors %}
+            <tr class="{% if selected_sponsor_id == item.sponsor_id %}statistics-selected-row{% endif %}">
+                <td>
+                    <a
+                            href="/admin/statistics?tab=sponsors&sponsor_id={{ item.sponsor_id }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                            class="statistics-sponsor-link {% if selected_sponsor_id == item.sponsor_id %}active{% endif %}"
+                    >
+                        {{ item.sponsor_name }}
+                    </a>
+                </td>
+
+                <td>
+                    <span class="table-code statistics-product-key">
+                        {{ item.product_key }}
+                    </span>
+                </td>
+
+                <td>
+                    {% if item.is_active %}
+                    <span class="status-badge status-active">
+                        활성
+                    </span>
+                    {% else %}
+                    <span class="status-badge status-inactive">
+                        비활성
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ item.valid_transaction_count }}건
+                </td>
+
+                <td>
+                    <strong>
+                        {{ "{:,}".format(item.valid_amount) }}원
+                    </strong>
+                </td>
+
+                <td>
+                    {{ item.canceled_count }}건
+                </td>
+
+                <td>
+                    {{ item.partial_canceled_count }}건
+                </td>
+
+                <td>
+                    {{ item.failed_count }}건
+                </td>
+
+                <td>
+                    {% if item.latest_transaction_at %}
+                    {{ item.latest_transaction_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a
+                            href="/admin/sponsors/{{ item.sponsor_id }}"
+                            class="statistics-manage-link"
+                    >
+                        상세
+                    </a>
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="10"
+                        class="empty-cell"
+                >
+                    Toss 상품 키가 등록된 스폰서가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% if sponsor_statistics.selected_sponsor %}
+<section class="statistics-section statistics-selected-sponsor-section">
+    <div class="statistics-section-heading">
+        <div>
+            <h2>
+                {{ sponsor_statistics.selected_sponsor.sponsor_name }}
+                전체 거래
+            </h2>
+            <p>
+                현재 조회 기간에 포함되는 모든 paymentKey 거래입니다.
+            </p>
+        </div>
+
+        <a
+                href="/admin/sponsors/{{ sponsor_statistics.selected_sponsor.sponsor_id }}"
+                class="statistics-section-link"
+        >
+            스폰서 상세
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="admin-table statistics-sponsor-transaction-table">
+            <thead>
+            <tr>
+                <th>수신일</th>
+                <th>결제자</th>
+                <th>상품명</th>
+                <th>주문번호</th>
+                <th>Payment Key</th>
+                <th>금액</th>
+                <th>Toss 상태</th>
+                <th>검증 결과</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for transaction in sponsor_statistics.selected_transactions.items %}
+            <tr>
+                <td>
+                    {% if transaction.last_received_at %}
+                    {{ transaction.last_received_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ transaction.customer_name or "-" }}
+                </td>
+
+                <td>
+                    {{ transaction.product_name or "-" }}
+                </td>
+
+                <td>
+                    <span class="table-code statistics-order-id">
+                        {{ transaction.order_id or "-" }}
+                    </span>
+                </td>
+
+                <td>
+                    <a
+                            href="/admin/webhooks/{{ transaction.payment_key }}"
+                            class="statistics-transaction-link statistics-payment-key"
+                    >
+                        {{ transaction.payment_key }}
+                    </a>
+                </td>
+
+                <td>
+                    {% if transaction.amount is not none %}
+                    {{ "{:,}".format(transaction.amount) }}원
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if transaction.status == "DONE" %}
+                    <span class="status-badge webhook-done">
+                        DONE
+                    </span>
+
+                    {% elif transaction.status in ["CANCELED", "CANCELD", "PARTIAL_CANCELED"] %}
+                    <span class="status-badge webhook-canceled">
+                        {{ transaction.status }}
+                    </span>
+
+                    {% elif transaction.status %}
+                    <span class="status-badge webhook-other">
+                        {{ transaction.status }}
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge webhook-empty">
+                        상태 없음
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if transaction.issue_code %}
+                    <span class="status-badge webhook-issue">
+                        {{ transaction.issue_label }}
+                    </span>
+                    {% else %}
+                    <span class="status-badge webhook-normal">
+                        정상
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td
+                        colspan="8"
+                        class="empty-cell"
+                >
+                    선택한 기간에 해당하는 거래가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if sponsor_statistics.selected_transactions.total_pages > 1 %}
+    <nav class="statistics-pagination">
+        {% if sponsor_statistics.selected_transactions.current_page > 1 %}
+        <a
+                href="/admin/statistics?tab=sponsors&sponsor_id={{ sponsor_statistics.selected_sponsor.sponsor_id }}&sponsor_page={{ sponsor_statistics.selected_transactions.current_page - 1 }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link"
+        >
+            이전
+        </a>
+        {% endif %}
+
+        {% for page_number in range(1, sponsor_statistics.selected_transactions.total_pages + 1) %}
+        {% if
+        page_number == 1
+        or page_number == sponsor_statistics.selected_transactions.total_pages
+        or (
+        page_number >= sponsor_statistics.selected_transactions.current_page - 2
+        and page_number <= sponsor_statistics.selected_transactions.current_page + 2
+        )
+        %}
+        <a
+                href="/admin/statistics?tab=sponsors&sponsor_id={{ sponsor_statistics.selected_sponsor.sponsor_id }}&sponsor_page={{ page_number }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link {% if page_number == sponsor_statistics.selected_transactions.current_page %}active{% endif %}"
+        >
+            {{ page_number }}
+        </a>
+        {% elif
+        page_number == sponsor_statistics.selected_transactions.current_page - 3
+        or page_number == sponsor_statistics.selected_transactions.current_page + 3
+        %}
+        <span class="statistics-page-ellipsis">…</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if sponsor_statistics.selected_transactions.current_page < sponsor_statistics.selected_transactions.total_pages %}
+        <a
+                href="/admin/statistics?tab=sponsors&sponsor_id={{ sponsor_statistics.selected_sponsor.sponsor_id }}&sponsor_page={{ sponsor_statistics.selected_transactions.current_page + 1 }}{% if selected_received_from %}&received_from={{ selected_received_from }}{% endif %}{% if selected_received_to %}&received_to={{ selected_received_to }}{% endif %}"
+                class="statistics-page-link"
+        >
+            다음
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    <p class="statistics-table-notice">
+        총 {{ sponsor_statistics.selected_transactions.total_count }}건
+        · 페이지당 {{ sponsor_statistics.selected_transactions.page_size }}건
+    </p>
+</section>
+{% else %}
+<div class="statistics-sponsor-selection-guide">
+    스폰서명을 선택하면 해당 스폰서의 전체 거래 내역이 표시됩니다.
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

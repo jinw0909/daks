@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}
+티켓 신청 상세
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <a href="/admin/tickets">← 목록으로</a>
+
+        <h1>{{ ticket_user.name }}</h1>
+
+        <p>
+            티켓 신청 ID #{{ ticket_user.id }}
+        </p>
+    </div>
+</div>
+
+<div class="detail-grid ticket-detail-grid">
+    <section class="detail-card">
+        <h2>신청자 정보</h2>
+
+        <dl class="detail-list">
+            <dt>신청 ID</dt>
+            <dd>{{ ticket_user.id }}</dd>
+
+            <dt>성함</dt>
+            <dd>{{ ticket_user.name }}</dd>
+
+            <dt>연락처</dt>
+            <dd>{{ ticket_user.phone }}</dd>
+
+            <dt>국가</dt>
+            <dd>{{ ticket_user.country or "-" }}</dd>
+
+            <dt>활동 유형</dt>
+            <dd>{{ ticket_user.activity_type or "-" }}</dd>
+
+            <dt>유입 경로</dt>
+            <dd>{{ ticket_user.registration_path or "-" }}</dd>
+
+            <dt>휴대전화 인증</dt>
+            <dd>
+                {% if ticket_user.phone_verified %}
+                인증 완료
+                {% else %}
+                미인증
+                {% endif %}
+            </dd>
+
+            <dt>개인정보 동의</dt>
+            <dd>
+                {% if ticket_user.privacy_agreed %}
+                동의
+                {% else %}
+                미동의
+                {% endif %}
+            </dd>
+
+            <dt>신청일</dt>
+            <dd>
+                {{ ticket_user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+            </dd>
+
+            <dt>최근 수정일</dt>
+            <dd>
+                {{ ticket_user.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
+            </dd>
+        </dl>
+    </section>
+
+    <section class="detail-card ticket-summary-card">
+        <h2>결제 요약</h2>
+
+        <dl class="detail-list compact-detail-list">
+            <dt>전체 결제</dt>
+            <dd>{{ payments | length }}건</dd>
+
+            <dt>결제 완료</dt>
+            <dd>
+                {{
+                payments
+                | selectattr("status", "equalto", 2)
+                | list
+                | length
+                }}건
+            </dd>
+
+            <dt>결제 대기</dt>
+            <dd>
+                {{
+                payments
+                | selectattr("status", "equalto", 1)
+                | list
+                | length
+                }}건
+            </dd>
+
+            <dt>실패/취소</dt>
+            <dd>
+                {{
+                (
+                payments
+                | selectattr("status", "equalto", 3)
+                | list
+                | length
+                )
+                +
+                (
+                payments
+                | selectattr("status", "equalto", 4)
+                | list
+                | length
+                )
+                }}건
+            </dd>
+        </dl>
+    </section>
+</div>
+
+<section class="detail-card full-width-card payment-history-card">
+    <div class="section-heading-row">
+        <div>
+            <h2>결제 내역</h2>
+            <p>이 티켓 신청과 연결된 전체 결제입니다.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper embedded-table-wrapper">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>표시 주문번호</th>
+                <th>상품명</th>
+                <th>결제 상태</th>
+                <th>예정 금액</th>
+                <th>실결제 금액</th>
+                <th>Toss 주문번호</th>
+                <th>결제일</th>
+                <th>생성일</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>
+                    <a href="/admin/payments/{{ payment.id }}">
+                        {{ payment.display_order_id or payment.id }}
+                    </a>
+                </td>
+
+                <td>{{ payment.payment_name }}</td>
+
+                <td>
+                    {% if payment.status == 1 %}
+                    <span class="status-badge status-ready">
+                        결제 대기
+                    </span>
+                    {% elif payment.status == 2 %}
+                    <span class="status-badge status-paid">
+                        결제 완료
+                    </span>
+                    {% elif payment.status == 3 %}
+                    <span class="status-badge status-failed">
+                        결제 실패
+                    </span>
+                    {% elif payment.status == 4 %}
+                    <span class="status-badge status-canceled">
+                        결제 취소
+                    </span>
+                    {% else %}
+                    <span class="status-badge">
+                        상태 확인 필요
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ "{:,}".format(payment.expected_amount) }}원
+                </td>
+
+                <td>
+                    {% if payment.paid_amount is not none %}
+                    {{ "{:,}".format(payment.paid_amount) }}원
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>{{ payment.order_id or "-" }}</td>
+
+                <td>
+                    {% if payment.paid_at %}
+                    {{ payment.paid_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ payment.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-cell">
+                    연결된 결제 내역이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

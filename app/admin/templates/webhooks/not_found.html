@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+웹훅 거래를 찾을 수 없음
+{% endblock %}
+
+{% block content %}
+<section class="empty-state-page">
+    <h1>웹훅 거래를 찾을 수 없습니다.</h1>
+
+    <p>
+        존재하지 않는 paymentKey입니다.
+    </p>
+
+    <a
+            href="/admin/webhooks"
+            class="admin-primary-link"
+    >
+        웹훅 목록으로
+    </a>
+</section>
+{% endblock %}

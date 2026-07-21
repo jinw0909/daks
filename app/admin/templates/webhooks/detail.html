@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}
+웹훅 거래 상세
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <a href="/admin/webhooks">
+            ← 웹훅 목록
+        </a>
+
+        <h1>웹훅 거래 상세</h1>
+
+        <p class="detail-code">
+            {{ transaction.payment_key }}
+        </p>
+    </div>
+</div>
+
+{% if transaction.issue_code %}
+<div class="admin-warning-message">
+    <strong>
+        {{ transaction.issue_label }}
+    </strong>
+
+    {% if transaction.issue_code == "PAYMENT_ID_MISSING" %}
+    <p>
+        일반 티켓 상품이지만 웹훅에 Payment ID가 포함되지 않았습니다.
+    </p>
+
+    {% elif transaction.issue_code == "PAYMENT_NOT_FOUND" %}
+    <p>
+        Payment ID는 존재하지만 내부 Payment를 찾지 못했습니다.
+    </p>
+
+    {% elif transaction.issue_code == "DUPLICATE_PAYMENT" %}
+    <p>
+        동일한 내부 Payment에 서로 다른 paymentKey의 완료 결제가 존재합니다.
+    </p>
+
+    {% elif transaction.issue_code == "PAYMENT_KEY_MISMATCH" %}
+    <p>
+        내부 Payment에 저장된 paymentKey와 현재 거래의 paymentKey가 다릅니다.
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="detail-grid">
+    <section class="detail-card">
+        <h2>거래 정보</h2>
+
+        <dl class="detail-list">
+            <dt>Toss 상태</dt>
+            <dd>
+                {{ transaction.status or "-" }}
+            </dd>
+
+            <dt>상품 구분</dt>
+            <dd>
+                {{ transaction.source_label }}
+            </dd>
+
+            <dt>상품명</dt>
+            <dd>
+                {{ transaction.product_name or "-" }}
+            </dd>
+
+            <dt>productKey</dt>
+            <dd>
+                <code class="detail-code">
+                    {{ transaction.product_key or "-" }}
+                </code>
+            </dd>
+
+            <dt>paymentKey</dt>
+            <dd>
+                <code class="detail-code">
+                    {{ transaction.payment_key }}
+                </code>
+            </dd>
+
+            <dt>orderId</dt>
+            <dd>
+                <code class="detail-code">
+                    {{ transaction.order_id or "-" }}
+                </code>
+            </dd>
+
+            <dt>금액</dt>
+            <dd>
+                {% if transaction.amount is not none %}
+                {{ "{:,}".format(transaction.amount) }}원
+                {% else %}
+                -
+                {% endif %}
+            </dd>
+
+            <dt>결제수단</dt>
+            <dd>
+                {{ transaction.method or "-" }}
+            </dd>
+
+            <dt>구매자</dt>
+            <dd>
+                {{ transaction.customer_name or "-" }}
+            </dd>
+
+            <dt>승인 시각</dt>
+            <dd>
+                {{ transaction.approved_at or "-" }}
+            </dd>
+
+            <dt>ORDER 웹훅 수신</dt>
+            <dd>
+                {{ transaction.event_count }}회
+            </dd>
+
+            <dt>전체 원본 이력</dt>
+            <dd>
+                {{ histories | length }}건
+            </dd>
+        </dl>
+    </section>
+
+    <section class="detail-card">
+        <h2>내부 연결 정보</h2>
+
+        <dl class="detail-list">
+            <dt>Payment ID</dt>
+            <dd>
+                {% if transaction.payment_id is not none %}
+                {{ transaction.payment_id }}
+                {% else %}
+                -
+                {% endif %}
+            </dd>
+
+            <dt>Ticket User ID</dt>
+            <dd>
+                {% if transaction.ticket_user_id is not none %}
+                {{ transaction.ticket_user_id }}
+                {% else %}
+                -
+                {% endif %}
+            </dd>
+
+            <dt>Payment 존재 여부</dt>
+            <dd>
+                {% if transaction.payment_exists %}
+                <span class="status-badge webhook-normal">
+                    연결됨
+                </span>
+                {% else %}
+                <span class="status-badge webhook-empty">
+                    미연결
+                </span>
+                {% endif %}
+            </dd>
+
+            <dt>내부 Payment 상태</dt>
+            <dd>
+                {{ transaction.payment_status if transaction.payment_status is not none else "-" }}
+            </dd>
+
+            <dt>내부 paymentKey</dt>
+            <dd>
+                <code class="detail-code">
+                    {{ transaction.payment_toss_key or "-" }}
+                </code>
+            </dd>
+
+            <dt>확인 상태</dt>
+            <dd>
+                {% if transaction.issue_code %}
+                <span class="status-badge webhook-issue">
+                    {{ transaction.issue_label }}
+                </span>
+                {% else %}
+                <span class="status-badge webhook-normal">
+                    정상
+                </span>
+                {% endif %}
+            </dd>
+        </dl>
+    </section>
+</div>
+
+<section class="detail-card webhook-history-card">
+    <h2>원본 웹훅 수신 이력</h2>
+
+    <div class="table-wrapper">
+        <table class="admin-table webhook-history-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>수신 시각</th>
+                <th>이벤트</th>
+                <th>상태</th>
+                <th>orderId</th>
+                <th>Payment ID</th>
+                <th>상품</th>
+                <th>원본</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for history in histories %}
+            <tr>
+                <td>{{ history.id }}</td>
+
+                <td>
+                    {% if history.datetime %}
+                    {{ history.datetime.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ history.eventType or "-" }}
+                </td>
+
+                <td>
+                    {{ history.status or "-" }}
+                </td>
+
+                <td>
+                    <span class="table-code">
+                        {{ history.order_id or "-" }}
+                    </span>
+                </td>
+
+                <td>
+                    {{ history.enrollmentid or "-" }}
+                </td>
+
+                <td>
+                    {{ history.product_name or "-" }}
+                </td>
+
+                <td>
+                    <details class="payload-details">
+                        <summary>보기</summary>
+                        <pre>{{ history.payload or "-" }}</pre>
+                    </details>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

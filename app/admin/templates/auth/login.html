@@ -6,51 +6,92 @@
 
 {% block content %}
 <section class="login-page">
-    <div class="login-card">
-        <h1>관리자 로그인</h1>
+    <div class="login-shell">
+        <div class="login-brand-panel">
+            <div class="login-brand-content">
+                <img
+                        src="{{ url_for('admin-static', path='/images/logo.png') }}"
+                        alt="DAKS"
+                        class="login-brand-logo"
+                >
 
-        <p class="login-description">
-            DAKS 관리자 계정으로 로그인하세요.
-        </p>
+                <span class="login-brand-badge">
+                    ADMINISTRATION
+                </span>
 
-        {% if error %}
-        <div class="error-message">
-            {{ error }}
+                <h1>
+                    Digital Asset<br>
+                    Korea Summit
+                </h1>
+
+                <p>
+                    행사 신청, 티켓, 결제와 스폰서 정보를
+                    하나의 관리자 화면에서 관리합니다.
+                </p>
+            </div>
+
+            <span class="login-brand-footer">
+                DAKS Admin Console
+            </span>
         </div>
-        {% endif %}
 
-        <form
-                method="post"
-                action="/admin/login"
-                class="login-form"
-        >
-            <label>
-                <span>아이디</span>
+        <div class="login-form-panel">
+            <div class="login-form-heading">
+                <span class="login-mobile-brand">
+                    DAKS ADMIN
+                </span>
 
-                <input
-                        type="text"
-                        name="username"
-                        value="{{ username | default('') }}"
-                        autocomplete="username"
-                        required
-                >
-            </label>
+                <h2>
+                    관리자 로그인
+                </h2>
 
-            <label>
-                <span>비밀번호</span>
+                <p>
+                    등록된 관리자 계정으로 로그인하세요.
+                </p>
+            </div>
 
-                <input
-                        type="password"
-                        name="password"
-                        autocomplete="current-password"
-                        required
-                >
-            </label>
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+            {% endif %}
 
-            <button type="submit">
-                로그인
-            </button>
-        </form>
+            <form
+                    method="post"
+                    action="/admin/login"
+                    class="login-form"
+            >
+                <label>
+                    <span>아이디</span>
+
+                    <input
+                            type="text"
+                            name="username"
+                            value="{{ username | default('') }}"
+                            autocomplete="username"
+                            placeholder="관리자 아이디"
+                            required
+                            autofocus
+                    >
+                </label>
+
+                <label>
+                    <span>비밀번호</span>
+
+                    <input
+                            type="password"
+                            name="password"
+                            autocomplete="current-password"
+                            placeholder="비밀번호"
+                            required
+                    >
+                </label>
+
+                <button type="submit">
+                    로그인
+                </button>
+            </form>
+        </div>
     </div>
 </section>
 {% endblock %}

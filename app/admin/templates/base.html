@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+
     <meta
             name="viewport"
             content="width=device-width, initial-scale=1.0"
@@ -12,34 +13,353 @@
     </title>
 
     <link
+            rel="icon"
+            type="image/x-icon"
+            href="{{ url_for('admin-static', path='/favicons/favicon.ico') }}"
+    >
+
+    <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="{{ url_for('admin-static', path='/favicons/favicon-32x32.png') }}"
+    >
+
+    <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="{{ url_for('admin-static', path='/favicons/favicon-16x16.png') }}"
+    >
+
+    <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="{{ url_for('admin-static', path='/favicons/apple-touch-icon.png') }}"
+    >
+
+    <link
             rel="stylesheet"
             href="{{ url_for('admin-static', path='/css/admin.css') }}"
     >
+
+    {% block page_css %}{% endblock %}
 </head>
-<body>
-<header class="admin-header">
-    <a href="/admin" class="admin-logo">
-        DAKS Admin
-    </a>
 
-    {% if admin %}
-    <div class="admin-header-actions">
-        <span>{{ admin.name }}님</span>
+<body class="{% if admin %}admin-authenticated{% else %}admin-guest{% endif %}">
 
-        <form
-                method="post"
-                action="/admin/logout"
-        >
-            <button type="submit">
-                로그아웃
+{% if admin %}
+
+<div class="admin-shell">
+
+    <aside
+            class="admin-sidebar"
+            id="admin-sidebar"
+    >
+        <div class="admin-sidebar-header">
+            <a
+                    href="/admin"
+                    class="admin-sidebar-logo"
+                    aria-label="DAKS 관리자 홈"
+            >
+                <img
+                        src="{{ url_for('admin-static', path='/images/logo.png') }}"
+                        alt="DAKS"
+                >
+            </a>
+
+            <span class="admin-sidebar-label">
+                ADMIN
+            </span>
+        </div>
+
+        <nav class="admin-sidebar-nav">
+
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-section-title">
+                    OVERVIEW
+                </span>
+
+                <a
+                        href="/admin"
+                        class="admin-sidebar-link {% if request.url.path == '/admin' or request.url.path == '/admin/' %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/>
+                        </svg>
+                    </span>
+
+                    <span>대시보드</span>
+                </a>
+
+                <a
+                        href="/admin/statistics"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/statistics') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 3h2v18H5V3Zm6 6h2v12h-2V9Zm6-4h2v16h-2V5Z"/>
+                        </svg>
+                    </span>
+
+                    <span>결제 통계</span>
+                </a>
+            </div>
+
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-section-title">
+                    APPLICATIONS
+                </span>
+
+                <a
+                        href="/admin/speakers"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/speakers') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0H5Z"/>
+                        </svg>
+                    </span>
+
+                    <span>연사 신청</span>
+                </a>
+
+                <a
+                        href="/admin/booths"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/booths') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 5h18v4H3V5Zm2 6h14v9H5v-9Zm3 2v5h3v-5H8Z"/>
+                        </svg>
+                    </span>
+
+                    <span>부스 신청</span>
+                </a>
+            </div>
+
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-section-title">
+                    PAYMENT
+                </span>
+
+                <a
+                        href="/admin/tickets"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/tickets') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5Zm6 3v8h2V8h-2Z"/>
+                        </svg>
+                    </span>
+
+                    <span>티켓 신청</span>
+                </a>
+
+                <a
+                        href="/admin/payments"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/payments') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 5h18v14H3V5Zm2 3h14V7H5v1Zm0 3v6h14v-6H5Zm2 3h5v2H7v-2Z"/>
+                        </svg>
+                    </span>
+
+                    <span>결제 내역</span>
+                </a>
+
+                <a
+                        href="/admin/webhooks"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/webhooks') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7.5 3A4.5 4.5 0 0 1 12 7.5v1h-2v-1a2.5 2.5 0 1 0-3.86 2.1L5 11.25A4.5 4.5 0 0 1 7.5 3Zm9 0A4.5 4.5 0 0 1 19 11.25l-1.14-1.65A2.5 2.5 0 1 0 14 7.5v1h-2v-1A4.5 4.5 0 0 1 16.5 3ZM12 15.5l.86.5a2.5 2.5 0 1 0 2.5 4.33l-1.72-1A4.5 4.5 0 1 1 10 19.33l-1.72 1A4.5 4.5 0 1 1 12.86 16l-.86-.5Z"/>
+                        </svg>
+                    </span>
+
+                    <span>웹훅 관리</span>
+                </a>
+
+                <a
+                        href="/admin/toss"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/toss') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 4h16v16H4V4Zm3 3v2h10V7H7Zm0 4v2h7v-2H7Zm0 4v2h5v-2H7Z"/>
+                        </svg>
+                    </span>
+
+                    <span>토스 직접 조회</span>
+
+                    <span class="admin-sidebar-soon">
+                        준비중
+                    </span>
+                </a>
+            </div>
+
+            <div class="admin-sidebar-section">
+                <span class="admin-sidebar-section-title">
+                    PARTNERS
+                </span>
+
+                <a
+                        href="/admin/sponsors"
+                        class="admin-sidebar-link {% if request.url.path.startswith('/admin/sponsors') %}active{% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2 15 8l7 .9-5 4.8 1.3 6.8L12 17.3l-6.3 3.2L7 13.7 2 8.9 9 8l3-6Z"/>
+                        </svg>
+                    </span>
+
+                    <span>스폰서 관리</span>
+                </a>
+            </div>
+
+        </nav>
+
+        <div class="admin-sidebar-footer">
+            <div class="admin-sidebar-user">
+                <span class="admin-sidebar-user-avatar">
+                    {{ admin.name[:1] if admin.name else "A" }}
+                </span>
+
+                <div>
+                    <strong>
+                        {{ admin.name }}
+                    </strong>
+
+                    <span>
+                        Administrator
+                    </span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="admin-content-shell">
+
+        <header class="admin-topbar">
+            <button
+                    type="button"
+                    class="admin-mobile-menu-button"
+                    aria-label="관리자 메뉴 열기"
+                    aria-controls="admin-sidebar"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/>
+                </svg>
             </button>
-        </form>
-    </div>
-    {% endif %}
-</header>
 
-<main class="admin-main">
-    {% block content %}{% endblock %}
-</main>
+            <div class="admin-topbar-title">
+                DAKS Administration
+            </div>
+
+            <div class="admin-header-actions">
+                <span class="admin-header-user-name">
+                    {{ admin.name }}님
+                </span>
+
+                <form
+                        method="post"
+                        action="/admin/logout"
+                >
+                    <button
+                            type="submit"
+                            class="admin-logout-button"
+                    >
+                        로그아웃
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <main class="admin-main">
+
+            {% else %}
+
+            <header class="admin-guest-header">
+                <a
+                        href="/admin"
+                        class="admin-guest-logo"
+                >
+                    DAKS Admin
+                </a>
+            </header>
+
+            <main class="admin-guest-main">
+
+                {% endif %}
+
+                {% block content %}{% endblock %}
+
+            </main>
+
+            {% if admin %}
+
+    </div>
+</div>
+
+<div class="admin-sidebar-overlay"></div>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+            const body = document.body;
+
+            const menuButton =
+                document.querySelector(
+                    ".admin-mobile-menu-button",
+                );
+
+            const overlay =
+                document.querySelector(
+                    ".admin-sidebar-overlay",
+                );
+
+            const sidebarLinks =
+                document.querySelectorAll(
+                    ".admin-sidebar-link",
+                );
+
+            const closeSidebar = () => {
+                body.classList.remove(
+                    "admin-sidebar-open",
+                );
+            };
+
+            menuButton?.addEventListener(
+                "click",
+                () => {
+                    body.classList.toggle(
+                        "admin-sidebar-open",
+                    );
+                },
+            );
+
+            overlay?.addEventListener(
+                "click",
+                closeSidebar,
+            );
+
+            sidebarLinks.forEach(
+                (link) => {
+                    link.addEventListener(
+                        "click",
+                        closeSidebar,
+                    );
+                },
+            );
+        },
+    );
+</script>
+
+{% endif %}
+
 </body>
 </html>

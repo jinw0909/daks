@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+스폰서를 찾을 수 없음
+{% endblock %}
+
+{% block content %}
+<section class="empty-state-page">
+    <h1>스폰서를 찾을 수 없습니다.</h1>
+
+    <p>
+        삭제되었거나 존재하지 않는 스폰서입니다.
+    </p>
+
+    <a
+            href="/admin/sponsors"
+            class="admin-primary-link"
+    >
+        스폰서 목록으로
+    </a>
+</section>
+{% endblock %}

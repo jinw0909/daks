@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.db.models import Payment
 from app.repositories.payment_repository import create_ready_payment, find_payments_by_ticket_user_ids, \
     find_payment_by_id_and_ticket_user_id
-from app.repositories.ticket_user_repository import create_ticket_user, find_ticket_users_by_name_and_phone
+from app.repositories.ticket_user_repository import create_ticket_user, find_ticket_users_by_name_and_phone, find_ticket_user_by_id_for_admin
 from app.schemas.ticket import (
     TicketPaymentPrepareRequest,
     TicketPaymentPrepareResponse, TicketPaymentHistoryResponse, TicketPaymentHistoryItem, TicketPaymentHistoryRequest,
@@ -277,3 +277,23 @@ def get_ticket_payment_status(
         quantity=1,
         paid_at=payment.paid_at,
     )
+
+
+
+def get_ticket_user_for_admin(
+        db: Session,
+        *,
+        ticket_user_id: int,
+):
+    ticket_user = find_ticket_user_by_id_for_admin(
+        db,
+        ticket_user_id=ticket_user_id,
+    )
+
+    if not ticket_user:
+        raise HTTPException(
+            status_code=404,
+            detail="티켓 신청 정보를 찾을 수 없습니다.",
+        )
+
+    return ticket_user

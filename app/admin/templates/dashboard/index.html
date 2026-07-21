@@ -6,34 +6,246 @@
 
 {% block content %}
 <section class="dashboard">
+
     <div class="dashboard-heading">
-        <h1>관리자 대시보드</h1>
+        <div>
+            <span class="dashboard-eyebrow">
+                DAKS ADMINISTRATION
+            </span>
 
-        <p>
-            연사 신청, 부스 신청, 티켓과 결제를 관리합니다.
-        </p>
+            <h1>
+                관리자 대시보드
+            </h1>
+
+            <p>
+                연사·부스 신청부터 티켓, 결제, 스폰서와 웹훅 상태까지 관리합니다.
+            </p>
+        </div>
+
+        <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="dashboard-site-link"
+        >
+            행사 사이트 열기
+
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 5h5v5h-2V8.4l-7.3 7.3-1.4-1.4L15.6 7H14V5ZM5 7h6v2H7v8h8v-4h2v6H5V7Z"/>
+            </svg>
+        </a>
     </div>
 
-    <div class="dashboard-grid">
-        <a href="/admin/speakers" class="dashboard-card">
-            <strong>연사 신청</strong>
-            <span>신청 목록과 공개 연사를 관리합니다.</span>
-        </a>
+    <section class="dashboard-overview">
+        <div class="dashboard-overview-heading">
+            <div>
+                <h2>빠른 관리</h2>
 
-        <a href="/admin/booths" class="dashboard-card">
-            <strong>부스 신청</strong>
-            <span>부스 신청 내역을 관리합니다.</span>
-        </a>
+                <p>
+                    자주 사용하는 관리자 메뉴입니다.
+                </p>
+            </div>
+        </div>
 
-        <a href="/admin/tickets" class="dashboard-card">
-            <strong>티켓 신청</strong>
-            <span>티켓 구매자 정보를 확인합니다.</span>
-        </a>
+        <div class="dashboard-grid">
+            <a
+                    href="/admin/statistics"
+                    class="dashboard-card dashboard-card-featured"
+            >
+                <div class="dashboard-card-top">
+                    <span class="dashboard-card-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 3h2v18H5V3Zm6 6h2v12h-2V9Zm6-4h2v16h-2V5Z"/>
+                        </svg>
+                    </span>
 
-        <a href="/admin/payments" class="dashboard-card">
-            <strong>결제 내역</strong>
-            <span>LinkPay 결제 결과를 확인합니다.</span>
-        </a>
-    </div>
+                    <span class="dashboard-card-arrow">
+                        →
+                    </span>
+                </div>
+
+                <div class="dashboard-card-content">
+                    <strong>
+                        결제 통계
+                    </strong>
+
+                    <span>
+                        일반 티켓과 스폰서 매출, 취소 및 결제 현황을 확인합니다.
+                    </span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/tickets"
+                    class="dashboard-card"
+            >
+                <div class="dashboard-card-top">
+                    <span class="dashboard-card-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5Zm6 3v8h2V8h-2Z"/>
+                        </svg>
+                    </span>
+
+                    <span class="dashboard-card-arrow">
+                        →
+                    </span>
+                </div>
+
+                <div class="dashboard-card-content">
+                    <strong>
+                        티켓 신청
+                    </strong>
+
+                    <span>
+                        티켓 구매자 정보와 내부 결제 연결 상태를 확인합니다.
+                    </span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/sponsors"
+                    class="dashboard-card"
+            >
+                <div class="dashboard-card-top">
+                    <span class="dashboard-card-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2 15 8l7 .9-5 4.8 1.3 6.8L12 17.3l-6.3 3.2L7 13.7 2 8.9 9 8l3-6Z"/>
+                        </svg>
+                    </span>
+
+                    <span class="dashboard-card-arrow">
+                        →
+                    </span>
+                </div>
+
+                <div class="dashboard-card-content">
+                    <strong>
+                        스폰서 관리
+                    </strong>
+
+                    <span>
+                        스폰서 정보, 로고, Toss 상품 키와 매출을 관리합니다.
+                    </span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/webhooks"
+                    class="dashboard-card"
+            >
+                <div class="dashboard-card-top">
+                    <span class="dashboard-card-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7.5 3A4.5 4.5 0 0 1 12 7.5v1h-2v-1a2.5 2.5 0 1 0-3.86 2.1L5 11.25A4.5 4.5 0 0 1 7.5 3Zm9 0A4.5 4.5 0 0 1 19 11.25l-1.14-1.65A2.5 2.5 0 1 0 14 7.5v1h-2v-1A4.5 4.5 0 0 1 16.5 3Z"/>
+                        </svg>
+                    </span>
+
+                    <span class="dashboard-card-arrow">
+                        →
+                    </span>
+                </div>
+
+                <div class="dashboard-card-content">
+                    <strong>
+                        웹훅 관리
+                    </strong>
+
+                    <span>
+                        Toss ORDER 웹훅과 원본 수신 이력을 확인합니다.
+                    </span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="dashboard-management">
+        <div class="dashboard-overview-heading">
+            <div>
+                <h2>전체 관리 메뉴</h2>
+
+                <p>
+                    행사 운영에 필요한 세부 관리 기능입니다.
+                </p>
+            </div>
+        </div>
+
+        <div class="dashboard-menu-grid">
+            <a
+                    href="/admin/speakers"
+                    class="dashboard-menu-card"
+            >
+                <span class="dashboard-menu-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0H5Z"/>
+                    </svg>
+                </span>
+
+                <div>
+                    <strong>연사 신청</strong>
+                    <span>신청 목록과 공개 연사를 관리합니다.</span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/booths"
+                    class="dashboard-menu-card"
+            >
+                <span class="dashboard-menu-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 5h18v4H3V5Zm2 6h14v9H5v-9Zm3 2v5h3v-5H8Z"/>
+                    </svg>
+                </span>
+
+                <div>
+                    <strong>부스 신청</strong>
+                    <span>부스 참가 신청 내역을 관리합니다.</span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/payments"
+                    class="dashboard-menu-card"
+            >
+                <span class="dashboard-menu-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 5h18v14H3V5Zm2 3h14V7H5v1Zm0 3v6h14v-6H5Z"/>
+                    </svg>
+                </span>
+
+                <div>
+                    <strong>결제 내역</strong>
+                    <span>내부 Payment 결제 결과를 확인합니다.</span>
+                </div>
+            </a>
+
+            <a
+                    href="/admin/toss"
+                    class="dashboard-menu-card dashboard-menu-card-upcoming"
+            >
+                <span class="dashboard-menu-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v16H4V4Zm3 3v2h10V7H7Zm0 4v2h7v-2H7Zm0 4v2h5v-2H7Z"/>
+                    </svg>
+                </span>
+
+                <div>
+                    <div class="dashboard-menu-title-row">
+                        <strong>
+                            토스 직접 조회
+                        </strong>
+
+                        <span class="dashboard-ready-badge">
+                            준비중
+                        </span>
+                    </div>
+
+                    <span>
+                        Toss Secret Key로 결제 정보를 직접 조회합니다.
+                    </span>
+                </div>
+            </a>
+        </div>
+    </section>
+
 </section>
 {% endblock %}

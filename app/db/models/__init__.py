@@ -10,6 +10,7 @@ from app.db.models.ticket_user import TicketUser
 from app.db.models.webhook_log import WebhookLog
 from app.db.models.webhook_log_history import WebhookLogHistory
 from app.db.models.payment_status_history import PaymentStatusHistory
+from app.db.models.sponsor import Sponsor
 
 __all__ = [
     "Admin",
@@ -22,4 +23,5 @@ __all__ = [
     "WebhookLog",
     "WebhookLogHistory",
     "PaymentStatusHistory",
+    "Sponsor",
 ]

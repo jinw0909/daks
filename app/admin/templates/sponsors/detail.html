@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}
+스폰서 상세
+{% endblock %}
+
+{% block content %}
+<div class="detail-header sponsor-detail-header">
+  <div>
+    <a href="/admin/sponsors">
+      ← 목록으로
+    </a>
+
+    <h1>{{ sponsor.name }}</h1>
+
+    <p>
+      {{ category_labels.get(sponsor.category, "알 수 없음") }}
+    </p>
+  </div>
+
+  <div class="detail-header-actions">
+    <a
+            href="/admin/sponsors/{{ sponsor.id }}/edit"
+            class="admin-primary-link"
+    >
+      수정
+    </a>
+  </div>
+</div>
+
+<div class="detail-grid sponsor-detail-grid">
+  <section class="detail-card">
+    <h2>기본 정보</h2>
+
+    {% if sponsor.logo_url %}
+    <div class="sponsor-detail-logo">
+      <img
+              src="{{ sponsor.logo_url }}"
+              alt="{{ sponsor.name }}"
+      >
+    </div>
+    {% endif %}
+
+    <dl class="detail-list">
+      <dt>ID</dt>
+      <dd>{{ sponsor.id }}</dd>
+
+      <dt>스폰서명</dt>
+      <dd>{{ sponsor.name }}</dd>
+
+      <dt>구분</dt>
+      <dd>
+        {{ category_labels.get(sponsor.category, "알 수 없음") }}
+      </dd>
+
+      <dt>노출 순서</dt>
+      <dd>{{ sponsor.display_order }}</dd>
+
+      <dt>상태</dt>
+      <dd>
+        {% if sponsor.is_active %}
+        <span class="status-badge status-active">
+                    활성
+                </span>
+        {% else %}
+        <span class="status-badge status-inactive">
+                    비활성
+                </span>
+        {% endif %}
+      </dd>
+
+      <dt>웹사이트</dt>
+      <dd>
+        {% if sponsor.website_url %}
+        <a
+                href="{{ sponsor.website_url }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="sponsor-detail-url"
+        >
+          {{ sponsor.website_url }}
+        </a>
+        {% else %}
+        -
+        {% endif %}
+      </dd>
+
+      <dt>등록일</dt>
+      <dd>
+        {% if sponsor.created_at %}
+        {{ sponsor.created_at.strftime("%Y-%m-%d %H:%M") }}
+        {% else %}
+        -
+        {% endif %}
+      </dd>
+
+      <dt>수정일</dt>
+      <dd>
+        {% if sponsor.updated_at %}
+        {{ sponsor.updated_at.strftime("%Y-%m-%d %H:%M") }}
+        {% else %}
+        -
+        {% endif %}
+      </dd>
+    </dl>
+  </section>
+
+  <section class="detail-card">
+    <h2>Toss LinkPay 정보</h2>
+
+    <dl class="detail-list">
+      <dt>productKey</dt>
+      <dd>
+        {% if sponsor.toss_product_key %}
+        <code class="detail-code">
+          {{ sponsor.toss_product_key }}
+        </code>
+        {% else %}
+        <span class="status-badge status-unconnected">
+                    미연결
+                </span>
+        {% endif %}
+      </dd>
+
+      <dt>상품 링크</dt>
+      <dd>
+        {% if sponsor.toss_product_link %}
+        <a
+                href="{{ sponsor.toss_product_link }}"
+                target="_blank"
+                rel="noopener noreferrer"
+        >
+          결제 링크 열기
+        </a>
+        {% else %}
+        -
+        {% endif %}
+      </dd>
+    </dl>
+
+<!--    <div class="sponsor-payment-placeholder">-->
+<!--      <strong>결제 현황</strong>-->
+<!--      <p>-->
+<!--        다음 단계에서 WebhookLogHistory 거래 집계와 연결합니다.-->
+<!--      </p>-->
+<!--    </div>-->
+    <div class="sponsor-payment-summary">
+      <h3>결제 현황</h3>
+
+      {% if not sponsor.toss_product_key %}
+      <p class="empty-description">
+        Toss productKey가 등록되지 않아 결제 내역을 연결할 수 없습니다.
+      </p>
+
+      {% else %}
+      <div class="sponsor-payment-summary-grid">
+        <div class="sponsor-payment-stat">
+          <span>전체 거래</span>
+          <strong>
+            {{ payment_summary.total_count }}건
+          </strong>
+        </div>
+
+        <div class="sponsor-payment-stat">
+          <span>결제 완료</span>
+          <strong>
+            {{ payment_summary.done_count }}건
+          </strong>
+        </div>
+
+        <div class="sponsor-payment-stat">
+          <span>결제 완료 금액</span>
+          <strong>
+            {{ "{:,}".format(payment_summary.done_amount) }}원
+          </strong>
+        </div>
+
+        <div class="sponsor-payment-stat">
+          <span>결제 취소</span>
+          <strong>
+            {{ payment_summary.canceled_count }}건
+          </strong>
+        </div>
+
+        {% if sponsor.toss_product_key %}
+        <div class="sponsor-recent-transactions">
+          <div class="sponsor-transaction-heading">
+            <h3>최근 거래</h3>
+
+            {% if payment_summary.total_count > 5 %}
+            <a
+                    href="/admin/webhooks?source=SPONSOR&keyword={{ sponsor.toss_product_key }}"
+                    class="table-action-link"
+            >
+              전체 보기
+            </a>
+            {% endif %}
+          </div>
+
+          {% if payment_summary.recent_transactions %}
+          <div class="table-wrapper sponsor-payment-table-wrapper">
+            <table class="admin-table sponsor-payment-table">
+              <thead>
+              <tr>
+                <th>결제자</th>
+                <th>금액</th>
+                <th>상태</th>
+                <th>결제 시각</th>
+                <th>Payment Key</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              {% for transaction in payment_summary.recent_transactions %}
+              <tr>
+                <td>
+                  {{ transaction.customer_name or "-" }}
+                </td>
+
+                <td>
+                  {% if transaction.amount is not none %}
+                  {{ "{:,}".format(transaction.amount | int) }}원
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if transaction.status == "DONE" %}
+                  <span class="status-badge status-active">
+                    완료
+                  </span>
+                  {% elif transaction.status in ["CANCELED", "CANCELD"] %}
+                  <span class="status-badge status-inactive">
+                    취소
+                  </span>
+                  {% else %}
+                  <span class="status-badge status-unconnected">
+                    {{ transaction.status or "알 수 없음" }}
+                  </span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if transaction.approved_at %}
+                  {{ transaction.approved_at }}
+                  {% elif transaction.last_received_at %}
+                  {{ transaction.last_received_at.strftime("%Y-%m-%d %H:%M") }}
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if transaction.payment_key %}
+                  <a
+                          href="/admin/webhooks/{{ transaction.payment_key }}"
+                          class="table-code"
+                  >
+                    {{ transaction.payment_key }}
+                  </a>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% else %}
+          <p class="empty-description">
+            해당 스폰서 상품으로 수신된 결제 웹훅이 없습니다.
+          </p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="sponsor-payment-stat">
+          <span>기타 상태</span>
+          <strong>
+            {{ payment_summary.other_count }}건
+          </strong>
+        </div>
+
+        <div class="sponsor-payment-stat">
+          <span>최근 수신</span>
+          <strong>
+            {% if payment_summary.latest_received_at %}
+            {{ payment_summary.latest_received_at.strftime("%Y-%m-%d %H:%M") }}
+            {% else %}
+            -
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="detail-card">
+    <h2>활성 상태 변경</h2>
+
+    <p>
+      비활성화해도 기존 Toss 결제 웹훅과의 연결 정보는 유지됩니다.
+    </p>
+
+    <form
+            method="post"
+            action="/admin/sponsors/{{ sponsor.id }}/toggle-active"
+    >
+      <button
+              type="submit"
+              class="{% if sponsor.is_active %}danger-button{% endif %}"
+      >
+        {% if sponsor.is_active %}
+        비활성화
+        {% else %}
+        활성화
+        {% endif %}
+      </button>
+    </form>
+  </section>
+</div>
+{% endblock %}

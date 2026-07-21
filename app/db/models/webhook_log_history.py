@@ -65,6 +65,16 @@ class WebhookLogHistory(Base):
         nullable=True,
     )
 
+    product_key: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    product_name: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     approved_at: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
