@@ -56,3 +56,6 @@ static/uploads/
 *.temp
 *.swp
 *~
+
+# Exports
+exports

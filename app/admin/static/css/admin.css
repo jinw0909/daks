@@ -2483,82 +2483,118 @@ select:disabled {
         padding-left: 14px;
     }
 }
-
 /* =========================================================
-   GLOBAL DATE INPUT STYLE
-   로그인 화면을 제외한 모든 관리자 날짜 입력 공통
+   GLOBAL DATE INPUT
+   관리자 페이지의 모든 날짜 입력 공통
    ========================================================= */
 
-body.admin-authenticated input[type="date"] {
+input[type="date"] {
+    position: relative;
+
+    width: 100%;
     min-width: 0;
     min-height: 42px;
-    padding: 0 44px 0 12px;
+
+    padding: 0 48px 0 13px !important;
 
     border: 1px solid #d1d5db;
     border-radius: 8px;
 
-    background-color: #ffffff;
+    background-color: #ffffff !important;
     background-image:
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 18px;
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 15px center !important;
+    background-size: 18px 18px !important;
 
     color: #111827;
     font: inherit;
 
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
 
     color-scheme: light;
 }
 
-/* 기존 웹훅 날짜 필드의 데스크톱 너비 유지 */
-.webhook-date-field input[type="date"] {
-    width: 220px;
-    height: 40px;
-}
+/*
+ * 삼성 인터넷·크롬의 기본 화살표/달력 아이콘은
+ * 클릭 기능은 남기고 투명하게 처리
+ */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
 
-/* 기본 달력 버튼은 클릭 영역을 유지한 채 투명 처리 */
-body.admin-authenticated input[type="date"]::-webkit-calendar-picker-indicator {
-    width: 44px;
+    width: 48px;
     height: 100%;
+
     margin: 0;
     padding: 0;
 
-    opacity: 0;
+    opacity: 0 !important;
     cursor: pointer;
 }
 
-/* iOS Safari 날짜값 정렬 보정 */
-body.admin-authenticated input[type="date"]::-webkit-date-and-time-value {
+/* 삼성 인터넷·크롬 내부 날짜 영역 */
+input[type="date"]::-webkit-datetime-edit {
+    min-width: 0;
+    padding: 0;
+    color: #111827;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #111827;
+}
+
+/* iPhone Safari 정렬 보정 */
+input[type="date"]::-webkit-date-and-time-value {
     min-height: 1.2em;
     text-align: left;
 }
 
-/* 값이 없거나 유효하지 않을 때 글자색 보정 */
-body.admin-authenticated input[type="date"]:invalid {
-    color: #6b7280;
-}
-
-body.admin-authenticated input[type="date"]:focus {
+/* 포커스 */
+input[type="date"]:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow:
             0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+/* 웹훅 날짜 필드 PC 너비 */
+.webhook-date-field input[type="date"] {
+    width: 220px;
+    height: 40px;
+}
+
+/* 모바일 */
 @media (max-width: 700px) {
-    body.admin-authenticated input[type="date"] {
-        width: 100%;
-        min-width: 0;
+    input[type="date"] {
+        width: 100% !important;
         height: 48px;
-        padding-right: 48px;
-        background-position: right 15px center;
+        min-height: 48px;
+
+        padding-right: 50px !important;
+
+        background-position:
+                right 16px center !important;
+
+        font-size: 15px;
     }
 
-    body.admin-authenticated input[type="date"]::-webkit-calendar-picker-indicator {
-        width: 48px;
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        width: 50px;
+    }
+
+    .webhook-date-field input[type="date"] {
+        width: 100% !important;
     }
 }
