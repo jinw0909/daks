@@ -15,12 +15,12 @@ class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=now_kst(),
+        default=now_kst,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=now_kst(),
-        onupdate=now_kst(),
+        default=now_kst,
+        onupdate=now_kst,
     )
